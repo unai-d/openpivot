@@ -1,3 +1,4 @@
 [bB]in/
 [oO]bj/
 .vscode/
+samples/raw/**
