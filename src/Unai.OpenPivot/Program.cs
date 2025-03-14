@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -9,7 +9,7 @@ class Program
 {
 	static void Main(string[] args)
 	{
-		string pivDirPath = "./samples";
+		string pivDirPath = "../../samples";
 
 		foreach (var pivFilePath in Directory.GetFileSystemEntries(pivDirPath, args.Length > 0 ? args[0] : "*.piv"))
 		{
