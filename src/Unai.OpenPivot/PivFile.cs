@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 
 namespace Unai.OpenPivot;
@@ -20,6 +23,7 @@ public class PivFile
 		{
 			stream.Position = 0;
 			Load(new ZLibStream(stream, CompressionMode.Decompress));
+			return;
 		}
 
 		var canvasWidth = br.ReadUInt32();
@@ -117,7 +121,7 @@ public class PivFile
 
 			for (int eIdx = 0; eIdx < elementCount; eIdx++)
 			{
-				var eOff = br.BaseStream.Position;
+				// var eOff = br.BaseStream.Position;
 				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
 
 				var eUnk0 = br.ReadUInt32();
@@ -129,10 +133,10 @@ public class PivFile
 				Console.Error.WriteLine($"    [e{eIdx}] {eUnk0:x8} fig={figIdx:x4} scale={scale} rot={rotation}");
 				
 				var figure = Figures[figIdx];
-				for (int segIdx = 0; segIdx < figure.SegmentCount; segIdx++)
+				for (int segIdx = 1; segIdx < figure.Segments.Count; segIdx++)
 				{
 					var segAngle = br.ReadDouble();
-					Console.Error.WriteLine($"        [seg{segIdx}] angle={segAngle}");
+					Console.Error.WriteLine($"        [seg{segIdx}] angle={Utils.ToDegrees(segAngle)}");
 				}
 
 				// TODO: if figure is text, read one extra byte.

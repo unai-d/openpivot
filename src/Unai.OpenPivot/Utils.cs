@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 
@@ -24,5 +25,15 @@ public static class Utils
 	public static string ToHex(byte[] buf)
 	{
 		return string.Join("", buf.Select(x => x.ToString("x2")));
+	}
+
+	public static double ToDegrees(double radians)
+	{
+		return radians / Math.PI * 180;
+	}
+
+	public static double ToRadians(double degrees)
+	{
+		return degrees / 180 * Math.PI;
 	}
 }

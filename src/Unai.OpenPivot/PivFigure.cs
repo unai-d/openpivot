@@ -1,42 +1,35 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace Unai.OpenPivot;
 
-[Flags]
-public enum PivSegmentLayoutFlags
-{
-	SkipSegmentType = 1, // 1
-	SkipStatic = 0b10, // 2
-	SkipColor = 0b100, // 4
-	SkipAlphaChannel = 0b1000, // 8
-	Unknown16 = 0b0001_0000, // 16
-	SkipMeshFill = 0b0010_0000, // 32
-	SkipThickness = 0b0100_0000, // 64
-	SkipSecondColor = 0b1000_0000, // 128
-}
-
-public enum PivSegmentType
-{
-	Line = 0,
-	CircleWhiteFill = 1,
-	Image = 2,
-	CircleFill = 3,
-	Circle = 4,
-	Text = 5,
-	SquareLine = 6,
-}
-
 public class PivFigure
 {
-	public int SegmentCount { get; private set; } = 0;
+	public List<PivSegment> Segments { get; private set; } =
+	[
+		new() // Root
+	];
 
 	public static PivFigure DefaultFigure => new()
 	{
-		SegmentCount = 12,
+		Segments =
+		[
+			new(),
+			new(0, 32, Utils.ToRadians(-90), 14),
+			new(1, 32, Utils.ToRadians(-90), 14),
+			new(2, 33, Utils.ToRadians(-90), 14),
+			new(3, 20, Utils.ToRadians(90), 20) { SegmentType = PivSegmentType.CircleWhiteFill }, // head
+			new(2, 38, Utils.ToRadians(135), 14),
+			new(2, 38, Utils.ToRadians(45), 14),
+			new(5, 40, Utils.ToRadians(120), 14),
+			new(6, 40, Utils.ToRadians(60), 14),
+			new(0, 50, Utils.ToRadians(112.5), 14),
+			new(0, 50, Utils.ToRadians(67.5), 14),
+			new(9, 50, Utils.ToRadians(112.5), 14),
+			new(10, 50, Utils.ToRadians(67.5), 14),
+		]
 	};
 
 	public PivFigure()
@@ -54,42 +47,24 @@ public class PivFigure
 		var kind = br.ReadByte();
 		var kindFlags = (PivSegmentLayoutFlags)kind;
 		var segmentCount = br.ReadUInt16();
-		SegmentCount = segmentCount;
 		Console.Error.WriteLine($"  [fig] type=0x{kind:x}({kind:b8}) {kindFlags} seg#={segmentCount}");
-
-		// var firstSegmentOff = br.BaseStream.Position;
-		// var segmentSize = kind switch
-		// {
-		// 	0x7a => 27,
-		// 	// 0xa0 => 26, // overreads 1
-		// 	0xb2 => 23,
-		// 	0xb8 => 23,
-		// 	0xb9 => 22,
-		// 	0xba => 22, // untested
-		// 	0xbb => 21,
-		// 	0xbc => 20,
-		// 	0xbe => 19, // overreads 1
-		// 	0xbf => 18, // overreads 1
-		// 	0xfe => 27,
-		// 	_ => 0,
-		// 	// _ => throw new NotImplementedException($"Figure data layout type 0x{kind:x2} not implemented."),
-		// };
 
 		PivSegmentType firstSegType = 0;
 
 		for (int segIdx = 0; segIdx < segmentCount; segIdx++)
 		{
-			// if (segmentSize != 0) br.BaseStream.Position = firstSegmentOff + (segmentSize * segIdx);
-
 			Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
 
-			var parent = br.ReadUInt16();
-			var child = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipMeshFill)) ? br.ReadUInt16() : 0; // unclear
-			var segLength = br.ReadSingle();
-			var angle = (br.ReadDouble() / Math.PI) * 180;
-			var thickness = br.ReadSingle();
+			PivSegment pivSeg = new();
+			Segments.Add(pivSeg);
 
-			var segType = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSegmentType)) ? (PivSegmentType)br.ReadByte() : 0;
+			pivSeg.ParentIndex = br.ReadUInt16();
+			var child = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipMeshFill)) ? br.ReadUInt16() : 0; // TODO: is it really the child ID?
+			pivSeg.Length = br.ReadSingle();
+			pivSeg.Angle = br.ReadDouble();
+			pivSeg.Thickness = br.ReadSingle();
+
+			pivSeg.SegmentType = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSegmentType)) ? (PivSegmentType)br.ReadByte() : 0;
 			var segStatic = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipStatic)) ? br.ReadByte() > 0 : false;
 			byte red = 0, green = 0, blue = 0, invAlpha = 0;
 			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipColor))
@@ -105,16 +80,16 @@ public class PivFigure
 				}
 			}
 
-			if (segType == PivSegmentType.Image || segType == PivSegmentType.Text)
+			if (pivSeg.SegmentType == PivSegmentType.Image || pivSeg.SegmentType == PivSegmentType.Text)
 			{
 				var imageIndex = br.ReadUInt16();
 				var backwards = br.ReadByte() > 0;
 				var mirror = br.ReadByte() > 0;
 			}
 
-			if (segIdx == 0) firstSegType = segType;
+			if (segIdx == 0) firstSegType = pivSeg.SegmentType;
 
-			Console.Error.WriteLine($"    [seg{segIdx}] parent={parent} len={segLength:N2} angle={angle:N2} thick={thickness:N2} type={segType} static={segStatic} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
+			Console.Error.WriteLine($"    [seg{segIdx + 1}] parent={pivSeg.ParentIndex} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={segStatic} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
 		}
 
 		Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
@@ -127,7 +102,7 @@ public class PivFigure
 			for (int edIdx = 0; edIdx < bendCount; edIdx++)
 			{
 				var bendSegIdx = br.ReadUInt16();
-				var bendAngle = (br.ReadDouble() / Math.PI) * 180;
+				var bendAngle = Utils.ToDegrees(br.ReadDouble());
 				Console.Error.WriteLine($"    {bendSegIdx} bend={bendAngle}");
 			}
 		}
@@ -159,7 +134,7 @@ public class PivFigure
 
 			// TODO: some parts contain unknown data. expect errors.
 			var uniqueChars = br.ReadByte();
-			List<uint> charPaths = new();
+			List<uint> charPaths = [];
 			for (int c = 0; c < uniqueChars; c++)
 			{
 				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
