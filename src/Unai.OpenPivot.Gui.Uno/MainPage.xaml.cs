@@ -104,7 +104,7 @@ public sealed partial class MainPage : Page
 	public async Task HandleFileOpenClick(object sender, RoutedEventArgs e)
 	{
 		var fileOpener = new FileOpenPicker();
-		fileOpener.FileTypeFilter.Add("*.piv");
+		fileOpener.FileTypeFilter.Add(".piv");
 
 		var pivFile = await fileOpener.PickSingleFileAsync();
 		if (pivFile != null)
