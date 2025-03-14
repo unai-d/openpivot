@@ -1,4 +1,9 @@
+using System;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Uno.Resizetizer;
+using Uno.UI;
 
 namespace Unai.OpenPivot.Gui.Uno;
 
@@ -9,7 +14,7 @@ public partial class App : Application
 		InitializeComponent();
 	}
 
-	protected Window? _mainWin;
+	protected Window _mainWin;
 
 	protected override void OnLaunched(LaunchActivatedEventArgs args)
 	{
