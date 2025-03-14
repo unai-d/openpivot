@@ -7,6 +7,8 @@ public static class Utils
 {
 	public static string GetBufferHexString(BinaryReader br, int count = 4)
 	{
+		if (!br.BaseStream.CanSeek) return null;
+
 		var ofs = br.BaseStream.Position;
 
 		var buf = br.ReadBytes(count);
