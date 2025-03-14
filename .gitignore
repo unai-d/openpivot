@@ -2,3 +2,4 @@
 [oO]bj/
 .vscode/
 samples/raw/**
+*.user
