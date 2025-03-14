@@ -111,7 +111,8 @@ public sealed partial class MainPage : Page
 		{
 			Console.Error.WriteLine($"{pivFile.DisplayName}");
 			var fileStream = await pivFile.OpenReadAsync();
-			// TODO
+			var pivFileC = new Unai.OpenPivot.PivFile();
+			pivFileC.Load(fileStream.AsStreamForRead());
 		}
 	}
 
