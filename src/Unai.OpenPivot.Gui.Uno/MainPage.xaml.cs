@@ -118,5 +118,6 @@ public sealed partial class MainPage : Page
 	public void HandleExitClick(object sender, RoutedEventArgs e)
 	{
 		App.Current.Exit();
+		Environment.Exit(0);
 	}
 }
