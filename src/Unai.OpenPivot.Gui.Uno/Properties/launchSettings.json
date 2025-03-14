@@ -1,0 +1,57 @@
+{
+	"iisSettings":
+	{
+		"windowsAuthentication": false,
+		"anonymousAuthentication": true,
+		"iisExpress":
+		{
+			"applicationUrl": "http://localhost:8080",
+			"sslPort": 0
+		}
+	},
+	"profiles":
+	{
+		"OpenPivot (WebAssembly)":
+		{
+			"commandName": "Project",
+			"dotnetRunMessages": true,
+			"launchBrowser": true,
+			"applicationUrl": "http://localhost:5000",
+			"inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			}
+		},
+		"OpenPivot (WebAssembly IIS Express)":
+		{
+			"commandName": "IISExpress",
+			"launchBrowser": true,
+			"inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			}
+		},
+		"OpenPivot (WinAppSDK Unpackaged)":
+		{
+			"commandName": "Project",
+			"compatibleTargetFramework": "windows"
+		},
+		"OpenPivot (WinAppSDK Packaged)":
+		{
+			"commandName": "MsixPackage",
+			"compatibleTargetFramework": "windows"
+		},
+		"OpenPivot (Desktop)":
+		{
+			"commandName": "Project",
+			"compatibleTargetFramework": "desktop"
+		},
+		"OpenPivot (Desktop WSL2)":
+		{
+			"commandName": "WSL2",
+			"commandLineArgs": "{ProjectDir}/bin/Debug/net8.0-desktop/Unai.OpenPivot.Gui.Uno.dll",
+			"distributionName": "",
+			"compatibleTargetFramework": "desktop"
+		}
+	}
+}

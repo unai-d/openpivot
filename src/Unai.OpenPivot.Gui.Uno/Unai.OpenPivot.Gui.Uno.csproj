@@ -1,0 +1,27 @@
+<Project Sdk="Uno.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0-maccatalyst;net8.0-windows10.0.19041;net8.0-browserwasm;net8.0-desktop</TargetFrameworks>
+
+		<OutputType>Exe</OutputType>
+		<UnoSingleProject>true</UnoSingleProject>
+
+		<ApplicationTitle>OpenPivot</ApplicationTitle>
+		<ApplicationId>io.github.unai-d.openpivot</ApplicationId>
+		<ApplicationDisplayVersion>0.1</ApplicationDisplayVersion>
+		<ApplicationVersion>0</ApplicationVersion>
+		<ApplicationPublisher>Unai Domínguez</ApplicationPublisher>
+		<Description>Open-source pivot-based animation software powered by the Uno Platform.</Description>
+
+		<UnoFeatures>
+			Skia;
+			Toolkit;
+			MVUX;
+		</UnoFeatures>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Unai.OpenPivot/Unai.OpenPivot.UnoLib.csproj" />
+	</ItemGroup>
+
+</Project>

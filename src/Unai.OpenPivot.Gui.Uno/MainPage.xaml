@@ -1,0 +1,63 @@
+﻿<Page x:Class="Unai.OpenPivot.Gui.Uno.MainPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:not_win="http://uno.ui/not_win"
+	xmlns:local="using:Unai.OpenPivot.Gui.Uno"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:sk="using:SkiaSharp.Views.Windows"
+	xmlns:utu="using:Uno.Toolkit.UI"
+	mc:Ignorable="d not_win"
+	Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="auto" />
+			<RowDefinition />
+		</Grid.RowDefinitions>
+
+		<MenuBar Grid.Row="0">
+			<MenuBarItem Title="File">
+				<MenuFlyoutItem Text="Open" Icon="OpenFile" Click="HandleFileOpenClick" />
+				<MenuFlyoutItem Text="Save" Icon="Save" />
+				<MenuFlyoutItem Text="Exit" />
+			</MenuBarItem>
+			<MenuBarItem Title="Edit">
+				<MenuFlyoutItem Text="Undo" Icon="Undo" />
+			</MenuBarItem>
+			<MenuBarItem Title="Help">
+				<MenuFlyoutItem Text="About…" Icon="NewWindow" />
+			</MenuBarItem>
+		</MenuBar>
+
+		<utu:TabBar Grid.Row="1" Style="{StaticResource TopTabBarStyle}" SelectedIndex="0">
+			<utu:TabBar.Items>
+				<utu:TabBarItem Icon="View" Content="Animator" />
+				<utu:TabBarItem Icon="Edit" Content="Designer" />
+				<utu:TabBarItem Icon="Pictures" Content="Backgrounds" />
+			</utu:TabBar.Items>
+		</utu:TabBar>
+
+		<StackPanel Grid.Row="2">
+			<CheckBox x:Name="hwAcceleration" Content="Hardware Accelerated" />
+		</StackPanel>
+
+		<Grid x:Name="panelGrid" Grid.Row="3">
+			<sk:SKSwapChainPanel x:Name="swapChain"
+				PaintSurface="OnPaintSwapChain"
+				PointerMoved="{x:Bind OnSurfacePointerMoved}"
+				not_win:Background="Transparent"
+				Visibility="{x:Bind hwAcceleration.IsChecked, Mode=OneWay}" />
+			<TextBlock x:Name="notSupported"
+				Visibility="Collapsed"
+				Text="SKSwapChainPanel not supported" />
+			<sk:SKXamlCanvas x:Name="canvas"
+				PaintSurface="OnPaintSurface"
+				PointerMoved="{x:Bind OnSurfacePointerMoved}"
+				not_win:Background="Transparent"
+				Visibility="{x:Bind Not(hwAcceleration.IsChecked), Mode=OneWay}" />
+		</Grid>
+	</Grid>
+</Page>

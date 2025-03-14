@@ -1,0 +1,10 @@
+{
+	"background_color": "#ff00ff",
+	"description": "Open-source pivot-based animation software",
+	"display": "standalone",
+	"name": "OpenPivot",
+	"short_name": "OpenPivot",
+	"start_url": "/index.html",
+	"theme_color": "#ffffff",
+	"scope": "/"
+}
