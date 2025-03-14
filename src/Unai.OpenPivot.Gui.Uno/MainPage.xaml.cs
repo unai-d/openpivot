@@ -18,6 +18,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using Windows.Storage.Pickers;
 using System.Threading.Tasks;
+using System.Numerics;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -26,6 +27,8 @@ namespace Unai.OpenPivot.Gui.Uno;
 public sealed partial class MainPage : Page
 {
 	private Point _currentPosition;
+
+	private PivFile _pivFile = new();
 
 	public MainPage()
 	{
@@ -90,30 +93,97 @@ public sealed partial class MainPage : Page
 
 		canvas.Clear(new(255, 255, 255));
 
-		var paint = new SKPaint
+		if (_pivFile == null)
 		{
-			Color = SKColors.Black,
-			IsAntialias = true,
-			Style = SKPaintStyle.Fill,
-			TextAlign = SKTextAlign.Center,
-			TextSize = 24
-		};
-		var coord = new SKPoint(scaledSize.Width / 2, (scaledSize.Height + paint.TextSize) / 2);
-		canvas.DrawText("This is a Skia canvas", coord, paint);
+			var paint = new SKPaint
+			{
+				Color = SKColors.DimGray,
+				IsAntialias = true,
+				Style = SKPaintStyle.Fill,
+				TextAlign = SKTextAlign.Center,
+				TextSize = 24
+			};
+			var coord = new SKPoint(scaledSize.Width / 2, (scaledSize.Height + paint.TextSize) / 2);
+			canvas.DrawText("Load a Pivot project file", coord, paint);
+
+			return;
+		}
+
+		void RenderFigureSegment(IList<PivSegment> segments, int segmentIndex, SKPoint origin)
+		{
+			var segment = segments[segmentIndex];
+			var endPt = segment.EndPoint;
+			var skEndPoint = origin + new SKPoint(endPt.X, endPt.Y);
+			var skPaint = new SKPaint
+			{
+				Color = SKColors.Black,
+				Style = SKPaintStyle.Stroke,
+				IsAntialias = true,
+				StrokeWidth = (float)segment.Thickness,
+				StrokeCap = SKStrokeCap.Round,
+			};
+
+			switch (segment.SegmentType)
+			{
+				case PivSegmentType.Line:
+					canvas.DrawLine(origin, skEndPoint, skPaint);
+					break;
+
+				case PivSegmentType.Circle:
+				case PivSegmentType.CircleFill:
+				case PivSegmentType.CircleWhiteFill:
+					var skMidPoint = new SKPoint((origin.X + skEndPoint.X) / 2, (origin.Y + skEndPoint.Y) / 2);
+					var circleRadius = (float)segment.Length / 2;
+
+					// Draw Fill
+					if (segment.SegmentType != PivSegmentType.Circle)
+					{
+						skPaint.Style = SKPaintStyle.Fill;
+						if (segment.SegmentType == PivSegmentType.CircleWhiteFill)
+						{
+							skPaint.Color = SKColors.White;
+						}
+						canvas.DrawCircle(skMidPoint, circleRadius, skPaint);
+					}
+
+					// Draw Stroke
+					skPaint.Style = SKPaintStyle.Stroke;
+					skPaint.Color = SKColors.Black;
+					canvas.DrawCircle(skMidPoint, circleRadius, skPaint);
+					break;
+			}
+
+			for (int branchIdx = 1; branchIdx < segments.Count; branchIdx++)
+			{
+				if (segments[branchIdx].ParentIndex == segmentIndex)
+				{
+					RenderFigureSegment(segments, branchIdx, skEndPoint);
+				}
+			}
+		}
+
+		foreach (var figure in _pivFile.Figures)
+		{
+			if (figure != null)
+			{
+				RenderFigureSegment(figure.Segments, 0, new SKPoint(scaledSize.Width / 2, scaledSize.Height / 2));
+			}
+		}
 	}
 
 	public async Task HandleFileOpenClick(object sender, RoutedEventArgs e)
 	{
 		var fileOpener = new FileOpenPicker();
+		fileOpener.SuggestedStartLocation = PickerLocationId.Unspecified;
 		fileOpener.FileTypeFilter.Add(".piv");
 
 		var pivFile = await fileOpener.PickSingleFileAsync();
 		if (pivFile != null)
 		{
-			Console.Error.WriteLine($"{pivFile.DisplayName}");
+			Console.Error.WriteLine($"Selected file: {pivFile.Path}");
 			var fileStream = await pivFile.OpenReadAsync();
-			var pivFileC = new Unai.OpenPivot.PivFile();
-			pivFileC.Load(fileStream.AsStreamForRead());
+			_pivFile = new PivFile();
+			_pivFile.Load(fileStream.AsStreamForRead());
 		}
 	}
 
