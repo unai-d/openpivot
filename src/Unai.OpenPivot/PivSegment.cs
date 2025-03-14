@@ -10,6 +10,7 @@ public class PivSegment
 	public double Angle { get; set; } = 0;
 	public double Thickness { get; set; } = 8;
 	public PivSegmentType SegmentType { get; set; } = PivSegmentType.Line;
+	public bool Static { get; set; } = false;
 
 	public PivSegment()
 	{
@@ -36,7 +37,7 @@ public class PivSegment
 		return ret;
 	}
 
-	public Vector2 EndPoint => new((float)(Length * Math.Cos(Angle)), (float)(Length * Math.Sin(Angle)));
+	public Vector2 EndPoint => Utils.VectorFromLengthAngle(Length, Angle);
 
 	public Vector2 GetAbsoluteEndPoint(PivFigure figure)
 	{

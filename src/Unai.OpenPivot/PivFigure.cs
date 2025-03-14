@@ -20,7 +20,7 @@ public class PivFigure
 			new(0, 32, Utils.ToRadians(-90), 14),
 			new(1, 32, Utils.ToRadians(-90), 14),
 			new(2, 33, Utils.ToRadians(-90), 14),
-			new(3, 20, Utils.ToRadians(90), 20) { SegmentType = PivSegmentType.CircleWhiteFill }, // head
+			new(3, 20, Utils.ToRadians(90), 20) { SegmentType = PivSegmentType.CircleWhiteFill, Static = true }, // head
 			new(2, 38, Utils.ToRadians(135), 14),
 			new(2, 38, Utils.ToRadians(45), 14),
 			new(5, 40, Utils.ToRadians(120), 14),
@@ -65,7 +65,7 @@ public class PivFigure
 			pivSeg.Thickness = br.ReadSingle();
 
 			pivSeg.SegmentType = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSegmentType)) ? (PivSegmentType)br.ReadByte() : 0;
-			var segStatic = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipStatic)) ? br.ReadByte() > 0 : false;
+			pivSeg.Static = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipStatic)) ? br.ReadByte() > 0 : false;
 			byte red = 0, green = 0, blue = 0, invAlpha = 0;
 			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipColor))
 			{
@@ -89,7 +89,7 @@ public class PivFigure
 
 			if (segIdx == 0) firstSegType = pivSeg.SegmentType;
 
-			Console.Error.WriteLine($"    [seg{segIdx + 1}] parent={pivSeg.ParentIndex} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={segStatic} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
+			Console.Error.WriteLine($"    [seg{segIdx + 1}] parent={pivSeg.ParentIndex} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={pivSeg.Static} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
 		}
 
 		Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));

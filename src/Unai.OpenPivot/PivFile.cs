@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Numerics;
 
 namespace Unai.OpenPivot;
 
@@ -12,6 +13,8 @@ public class PivFile
 		null,
 		PivFigure.DefaultFigure,
 	];
+
+	public List<PivFrame> Frames { get; } = [];
 
 	public void Load(Stream stream)
 	{
@@ -112,6 +115,9 @@ public class PivFile
 
 		for (int f = 0; f < frameCount; f++)
 		{
+			var frame = new PivFrame();
+			Frames.Add(frame);
+
 			var bgIdx = br.ReadUInt16();
 			var unk1 = br.ReadUInt16();
 			var unk2 = br.ReadByte();
@@ -121,28 +127,35 @@ public class PivFile
 
 			for (int eIdx = 0; eIdx < elementCount; eIdx++)
 			{
-				// var eOff = br.BaseStream.Position;
+				var figInst = new PivFigureInstance();
+				frame.FigureInstances.Add(figInst);
+
 				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
 
 				var eUnk0 = br.ReadUInt32();
-				var figIdx = br.ReadUInt16();
-				var scale = br.ReadSingle(); // untested
+				figInst.FigureIndex = br.ReadUInt16();
+				figInst.Scale = br.ReadSingle(); // untested
 				var rotation = br.ReadSingle(); // untested
 				var eUnk1 = br.ReadByte();
 
-				Console.Error.WriteLine($"    [e{eIdx}] {eUnk0:x8} fig={figIdx:x4} scale={scale} rot={rotation}");
+				Console.Error.WriteLine($"    [e{eIdx}] {eUnk0:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} rot={rotation}");
 				
-				var figure = Figures[figIdx];
+				var figure = Figures[figInst.FigureIndex];
 				for (int segIdx = 1; segIdx < figure.Segments.Count; segIdx++)
 				{
 					var segAngle = br.ReadDouble();
+					figInst.SegmentOverrides.Add(new(segAngle));
 					Console.Error.WriteLine($"        [seg{segIdx}] angle={Utils.ToDegrees(segAngle)}");
 				}
 
-				// TODO: if figure is text, read one extra byte.
+				if (figure.Segments[1].SegmentType == PivSegmentType.Text)
+				{
+					_ = br.ReadByte();
+				}
 
 				var x = br.ReadSingle();
 				var y = br.ReadSingle();
+				figInst.Position = new(x, y);
 				var eUnk2 = br.ReadBytes(5); // always 0
 
 				Console.Error.WriteLine($"      x={x} y={y} {Utils.ToHex(eUnk2)}");

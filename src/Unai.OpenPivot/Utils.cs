@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 
 namespace Unai.OpenPivot;
 
@@ -35,5 +36,10 @@ public static class Utils
 	public static double ToRadians(double degrees)
 	{
 		return degrees / 180 * Math.PI;
+	}
+
+	public static Vector2 VectorFromLengthAngle(double length, double angle)
+	{
+		return new((float)(length * Math.Cos(angle)), (float)(length * Math.Sin(angle)));
 	}
 }
