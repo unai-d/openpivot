@@ -49,7 +49,28 @@ public sealed partial class MainPage : Page
 
 	private async void OnLoaded(object sender, RoutedEventArgs e)
 	{
-		// TODO
+		_pivFile.Frames.Add(new());
+		_pivFile.Frames[0].FigureInstances.Add(new() { FigureIndex = 1, Position = new(320, 180) });
+	}
+
+	private void OnSurfacePointerMoved(object sender, PointerRoutedEventArgs e)
+	{
+		_currentPosition = e.GetCurrentPoint(panelGrid).Position;
+		RedrawCanvas();
+	}
+
+	private void RedrawCanvas()
+	{
+		if (hwAcceleration.IsChecked ?? false)
+		{
+			#if !WINDOWS
+			swapChain.Invalidate();
+			#endif
+		}
+		else
+		{
+			canvas.Invalidate();
+		}
 	}
 
 	private void OnPaintSwapChain(object sender, SKPaintGLSurfaceEventArgs e)
@@ -66,22 +87,6 @@ public sealed partial class MainPage : Page
 		var info = e.Info;
 
 		Render(canvas, new Size(info.Width, info.Height));
-	}
-
-	private void OnSurfacePointerMoved(object sender, PointerRoutedEventArgs e)
-	{
-		_currentPosition = e.GetCurrentPoint(panelGrid).Position;
-		
-		if (hwAcceleration.IsChecked ?? false)
-		{
-			#if !WINDOWS
-			swapChain.Invalidate();
-			#endif
-		}
-		else
-		{
-			canvas.Invalidate();
-		}
 	}
 
 	private void Render(SKCanvas canvas, Size size)
@@ -162,11 +167,14 @@ public sealed partial class MainPage : Page
 			}
 		}
 
-		foreach (var figure in _pivFile.Figures)
+		if (_pivFile.Frames.Count == 0) return;
+
+		foreach (var figInst in _pivFile.Frames[0].FigureInstances)
 		{
+			var figure = _pivFile.Figures[figInst.FigureIndex];
 			if (figure != null)
 			{
-				RenderFigureSegment(figure.Segments, 0, new SKPoint(scaledSize.Width / 2, scaledSize.Height / 2));
+				RenderFigureSegment(figure.Segments, 0, new SKPoint(figInst.Position.X, figInst.Position.Y));
 			}
 		}
 	}
@@ -184,6 +192,7 @@ public sealed partial class MainPage : Page
 			var fileStream = await pivFile.OpenReadAsync();
 			_pivFile = new PivFile();
 			_pivFile.Load(fileStream.AsStreamForRead());
+			RedrawCanvas();
 		}
 	}
 
