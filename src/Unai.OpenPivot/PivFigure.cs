@@ -97,6 +97,10 @@ public class PivFigure
 		// bends
 		var bendCount = br.ReadUInt16();
 		Console.Error.WriteLine($"    bend#={bendCount}");
+		if (bendCount > segmentCount)
+		{
+			throw new InvalidDataException();
+		}
 		if (bendCount > 0)
 		{
 			for (int edIdx = 0; edIdx < bendCount; edIdx++)
