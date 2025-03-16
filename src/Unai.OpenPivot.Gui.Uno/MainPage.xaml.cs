@@ -191,7 +191,21 @@ public sealed partial class MainPage : Page
 			Console.Error.WriteLine($"Selected file: {pivFile.Path}");
 			var fileStream = await pivFile.OpenReadAsync();
 			_pivFile = new PivFile();
-			_pivFile.Load(fileStream.AsStreamForRead());
+			try
+			{
+				_pivFile.Load(fileStream.AsStreamForRead());
+			}
+			catch (Exception ex)
+			{
+				var errMsg = new ContentDialog()
+				{
+					Title = "Error Loading Pivot Project File",
+					Content = ex,
+					XamlRoot = XamlRoot,
+					CloseButtonText = "OK",
+				};
+				await errMsg.ShowAsync();
+			}
 			RedrawCanvas();
 		}
 	}
