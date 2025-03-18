@@ -76,8 +76,8 @@ public class PivFigure
 				invAlpha = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipAlphaChannel)) ? br.ReadByte() : (byte)0;
 			}
 
-				if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSecondColor))
-				{
+			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSecondColor))
+			{
 				var hasSecondColor = br.ReadByte();
 				if (hasSecondColor > 1) throw new InvalidDataException("Invalid boolean value.");
 				// if (hasSecondColor > 0) br.ReadBytes((!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipAlphaChannel)) ? 4 : 3);
@@ -220,8 +220,23 @@ public class PivFigure
 			}
 		}
 
-		var unk4 = br.ReadUInt16();
-		Console.Error.WriteLine($"    unk4={unk4}");
+		// polygon data
+		var polygonCount = br.ReadUInt16();
+		Console.Error.WriteLine($"    poly#={polygonCount}");
+		if (polygonCount > 0)
+		{
+			for (int polyIdx = 0; polyIdx < polygonCount; polyIdx++)
+			{
+				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+				var unkCount = br.ReadUInt32();
+				br.ReadUInt16();
+				for (int i = 0; i < unkCount; i++)
+				{
+					var unk1 = br.ReadUInt16();
+					Console.Error.WriteLine($"      [poly{polyIdx}] {unk1}");
+				}
+			}
+		}
 
 		if (kindFlags.HasFlag(PivSegmentLayoutFlags.SkipThickness))
 		{

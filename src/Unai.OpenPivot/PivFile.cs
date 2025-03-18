@@ -127,7 +127,7 @@ public class PivFile
 			var unk2 = br.ReadByte();
 			var elementCount = br.ReadUInt16();
 
-			Console.Error.WriteLine($"  [fr{f}] bg={bgIdx} {unk1:x4} {unk2:x2} elems={elementCount}");
+			Console.Error.WriteLine($"  [fr{f}] bg={bgIdx} {unk1:x4} {unk2:x2} elem#={elementCount}");
 
 			for (int eIdx = 0; eIdx < elementCount; eIdx++)
 			{
@@ -142,7 +142,7 @@ public class PivFile
 				var rotation = br.ReadSingle(); // untested
 				var eUnk1 = br.ReadByte();
 
-				Console.Error.WriteLine($"    [e{eIdx}] {eUnk0:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} rot={rotation}");
+				Console.Error.WriteLine($"    [e{eIdx}] {eUnk0:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} rot={rotation} {eUnk1:x2}");
 				
 				var figure = Figures[figInst.FigureIndex];
 				for (int segIdx = 1; segIdx < figure.Segments.Count; segIdx++)
