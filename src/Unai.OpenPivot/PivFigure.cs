@@ -214,21 +214,23 @@ public class PivFigure
 					Console.Error.WriteLine($"    skip");
 				}
 			}
-
-			br.ReadBytes(2);
-
-			if (kindFlags.HasFlag(PivSegmentLayoutFlags.SkipThickness))
-			{
-				var outlineWidth = br.ReadSingle() * 200;
-				br.ReadUInt32();
-			}
 		}
-		else
+
+		var unk4 = br.ReadUInt16();
+		Console.Error.WriteLine($"    unk4={unk4}");
+
+		if (kindFlags.HasFlag(PivSegmentLayoutFlags.SkipThickness))
 		{
-			br.ReadBytes(2);
+			var outlineWidth = br.ReadSingle() * 200;
+			br.ReadUInt32();
 		}
 
 		Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+
+		if (!kindFlags.HasFlag(PivSegmentLayoutFlags.Unknown16))
+		{
+			br.ReadBytes(segmentCount * 2);
+		}
 
 		var figName = br.ReadPivString();
 		Console.Error.WriteLine($"    figName='{figName}'");
