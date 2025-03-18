@@ -144,40 +144,33 @@ public class PivFigure
 				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
 
 				// stuff like newlines, spaces and tabs don't render anything and thus don't have path data (runlen = 0).
-				var runlen = br.ReadUInt32();
-				charPaths.Add(runlen);
+				var instructionCount = br.ReadUInt32();
+				charPaths.Add(instructionCount);
 
-				byte local16 = 0;
-				List<byte> local8 = Enumerable.Repeat((byte)0, (int)(runlen * 4)).ToList();
+				byte pathOpCode = 0;
+				List<byte> pathOpCodes = Enumerable.Repeat((byte)0, (int)(instructionCount * 4)).ToList();
 				int i = 0;
-				if (runlen > 0)
+				if (instructionCount > 0)
 				{
 					do
 					{
-						var local15 = br.ReadByte();
-						for (int j = 0; (i < runlen && (j < 8)); j += 4)
+						var opCodePair = br.ReadByte();
+						for (int j = 0; i < instructionCount && (j < 8); j += 4)
 						{
-							local16 = (byte)((0xf << ((byte)j & 0x1f) & (uint)local15) >> ((byte)j & 0x1f));
-							local8[i] = local16;
-							if (local16 == 2)
-							{
-								i += 3;
-							}
-							else
-							{
-								i += 1;
-							}
+							pathOpCode = (byte)((0xf << ((byte)j & 0x1f) & (uint)opCodePair) >> ((byte)j & 0x1f));
+							pathOpCodes[i] = pathOpCode;
+							i += pathOpCode == 2 ? 3 : 1;
 						}
 					}
-					while (i < runlen);
+					while (i < instructionCount);
 				}
 				i = 0;
-				if (runlen > 0)
+				if (instructionCount > 0)
 				{
 					do
 					{
 						// Console.WriteLine($"      {i}/{runlen}");
-						switch (local8[i])
+						switch (pathOpCodes[i])
 						{
 							case 0: // moveto x y
 								br.ReadDouble();
@@ -202,7 +195,7 @@ public class PivFigure
 						}
 						i++;
 					}
-					while (i < runlen);
+					while (i < instructionCount);
 				}
 			}
 
