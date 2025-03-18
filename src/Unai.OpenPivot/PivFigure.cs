@@ -66,6 +66,7 @@ public class PivFigure
 
 			pivSeg.SegmentType = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSegmentType)) ? (PivSegmentType)br.ReadByte() : 0;
 			pivSeg.Static = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipStatic)) ? br.ReadByte() > 0 : false;
+			
 			byte red = 0, green = 0, blue = 0, invAlpha = 0;
 			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipColor))
 			{
@@ -73,11 +74,14 @@ public class PivFigure
 				green = br.ReadByte();
 				blue = br.ReadByte();
 				invAlpha = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipAlphaChannel)) ? br.ReadByte() : (byte)0;
+			}
+
 				if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSecondColor))
 				{
-					var hasSecondColor = br.ReadByte() > 0;
-					if (hasSecondColor) br.ReadBytes((!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipAlphaChannel)) ? 4 : 3);
-				}
+				var hasSecondColor = br.ReadByte();
+				if (hasSecondColor > 1) throw new InvalidDataException("Invalid boolean value.");
+				// if (hasSecondColor > 0) br.ReadBytes((!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipAlphaChannel)) ? 4 : 3);
+				if (hasSecondColor > 0) br.ReadBytes(4);
 			}
 
 			if (pivSeg.SegmentType == PivSegmentType.Image || pivSeg.SegmentType == PivSegmentType.Text)
