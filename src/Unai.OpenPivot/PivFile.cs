@@ -25,7 +25,11 @@ public class PivFile
 		if (pivAniVersion == 'x')
 		{
 			stream.Position = 0;
-			Load(new ZLibStream(stream, CompressionMode.Decompress));
+			using var zlibStr = new ZLibStream(stream, CompressionMode.Decompress);
+			using var memStr = new MemoryStream();
+			zlibStr.CopyTo(memStr);
+			memStr.Position = 0;
+			Load(memStr);
 			return;
 		}
 
