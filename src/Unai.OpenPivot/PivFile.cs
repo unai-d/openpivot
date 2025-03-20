@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Numerics;
 
 namespace Unai.OpenPivot;
 
@@ -28,6 +27,7 @@ public class PivFile
 			using var zlibStr = new ZLibStream(stream, CompressionMode.Decompress);
 			using var memStr = new MemoryStream();
 			zlibStr.CopyTo(memStr);
+			Console.Error.WriteLine($"Uncompressed PIV file size: {memStr.Length}");
 			memStr.Position = 0;
 			Load(memStr);
 			return;

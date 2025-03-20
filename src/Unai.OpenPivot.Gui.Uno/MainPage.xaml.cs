@@ -27,6 +27,7 @@ namespace Unai.OpenPivot.Gui.Uno;
 public sealed partial class MainPage : Page
 {
 	private Point _currentPosition;
+	private int _currentFrame = 0;
 
 	private PivFile _pivFile = new();
 
@@ -114,10 +115,18 @@ public sealed partial class MainPage : Page
 			return;
 		}
 
-		void RenderFigureSegment(IList<PivSegment> segments, int segmentIndex, SKPoint origin)
+		void RenderFigureSegment(IList<PivSegment> segments, int segmentIndex, SKPoint origin, List<PivSegmentOverrides> segmentOverrides = null)
 		{
 			var segment = segments[segmentIndex];
 			var endPt = segment.EndPoint;
+			if (segmentOverrides != null && segmentOverrides.Count > segmentIndex)
+			{
+				var segOvr = segmentOverrides[segmentIndex];
+				if (segOvr != null && segOvr.Angle.HasValue)
+				{
+					endPt = Utils.VectorFromLengthAngle(segment.Length, segmentOverrides[segmentIndex].Angle.Value);
+				}
+			}
 			var skEndPoint = origin + new SKPoint(endPt.X, endPt.Y);
 			var skPaint = new SKPaint
 			{
@@ -162,21 +171,32 @@ public sealed partial class MainPage : Page
 			{
 				if (segments[branchIdx].ParentIndex == segmentIndex)
 				{
-					RenderFigureSegment(segments, branchIdx, skEndPoint);
+					RenderFigureSegment(segments, branchIdx, skEndPoint, segmentOverrides);
 				}
 			}
 		}
 
 		if (_pivFile.Frames.Count == 0) return;
 
-		foreach (var figInst in _pivFile.Frames[0].FigureInstances)
+		foreach (var figInst in _pivFile.Frames[_currentFrame].FigureInstances)
 		{
 			var figure = _pivFile.Figures[figInst.FigureIndex];
 			if (figure != null)
 			{
-				RenderFigureSegment(figure.Segments, 0, new SKPoint(figInst.Position.X, figInst.Position.Y));
+				RenderFigureSegment(figure.Segments, 0, new SKPoint(figInst.Position.X, figInst.Position.Y), figInst.SegmentOverrides);
 			}
 		}
+	}
+
+	private void OnFrameNumberBoxChange(object sender, NumberBoxValueChangedEventArgs e)
+	{
+		if (_pivFile == null) return;
+
+		_currentFrame = (int)_frameNumBox.Value;
+		if (_currentFrame < 0) _currentFrame = 0;
+		else if (_currentFrame >= _pivFile.Frames.Count) _currentFrame = _pivFile.Frames.Count - 1;
+		_frameNumBox.Value = _currentFrame;
+		RedrawCanvas();
 	}
 
 	public async Task HandleFileOpenClick(object sender, RoutedEventArgs e)
@@ -189,10 +209,10 @@ public sealed partial class MainPage : Page
 		if (pivFile != null)
 		{
 			Console.Error.WriteLine($"Selected file: {pivFile.Path}");
-			var fileStream = await pivFile.OpenReadAsync();
-			_pivFile = new PivFile();
 			try
 			{
+				var fileStream = await pivFile.OpenReadAsync();
+				_pivFile = new PivFile();
 				_pivFile.Load(fileStream.AsStreamForRead());
 			}
 			catch (Exception ex)

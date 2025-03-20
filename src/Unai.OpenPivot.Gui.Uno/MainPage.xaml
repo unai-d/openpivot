@@ -7,6 +7,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:sk="using:SkiaSharp.Views.Windows"
 	xmlns:utu="using:Uno.Toolkit.UI"
+	xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
 	mc:Ignorable="d not_win"
 	Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -26,9 +27,10 @@
 			</MenuBarItem>
 			<MenuBarItem Title="Edit">
 				<MenuFlyoutItem Text="Undo" Icon="Undo" />
+				<MenuFlyoutItem Text="Redo" Icon="Redo" />
 			</MenuBarItem>
 			<MenuBarItem Title="Help">
-				<MenuFlyoutItem Text="About…" Icon="NewWindow" />
+				<MenuFlyoutItem Text="About…" />
 			</MenuBarItem>
 		</MenuBar>
 
@@ -40,8 +42,9 @@
 			</utu:TabBar.Items>
 		</utu:TabBar>
 
-		<StackPanel Grid.Row="2">
+		<StackPanel Orientation="Horizontal" Grid.Row="2">
 			<CheckBox x:Name="hwAcceleration" Content="Hardware Accelerated" />
+			<muxc:NumberBox x:Name="_frameNumBox" Value="0" SpinButtonPlacementMode="Compact" ValueChanged="{x:Bind OnFrameNumberBoxChange}" />
 		</StackPanel>
 
 		<Grid x:Name="panelGrid" Grid.Row="3">
