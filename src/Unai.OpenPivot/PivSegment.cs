@@ -11,6 +11,7 @@ public class PivSegment
 	public double Thickness { get; set; } = 8;
 	public PivSegmentType SegmentType { get; set; } = PivSegmentType.Line;
 	public bool Static { get; set; } = false;
+	public Vector4 Color { get; set; } = Vector4.UnitW; // opaque black.
 
 	public PivSegment()
 	{

@@ -118,19 +118,19 @@ public sealed partial class MainPage : Page
 		void RenderFigureSegment(IList<PivSegment> segments, int segmentIndex, SKPoint origin, List<PivSegmentOverrides> segmentOverrides = null)
 		{
 			var segment = segments[segmentIndex];
-			var endPt = segment.EndPoint;
+			var relEndPt = segment.EndPoint;
 			if (segmentOverrides != null && segmentOverrides.Count > segmentIndex)
 			{
 				var segOvr = segmentOverrides[segmentIndex];
 				if (segOvr != null && segOvr.Angle.HasValue)
 				{
-					endPt = Utils.VectorFromLengthAngle(segment.Length, segmentOverrides[segmentIndex].Angle.Value);
+					relEndPt = Utils.VectorFromLengthAngle(segment.Length, segOvr.Angle.Value);
 				}
 			}
-			var skEndPoint = origin + new SKPoint(endPt.X, endPt.Y);
+			var skEndPoint = origin + new SKPoint(relEndPt.X, relEndPt.Y);
 			var skPaint = new SKPaint
 			{
-				Color = SKColors.Black,
+				Color = new((byte)(segment.Color.X * 256), (byte)(segment.Color.Y * 256), (byte)(segment.Color.Z * 256)),
 				Style = SKPaintStyle.Stroke,
 				IsAntialias = true,
 				StrokeWidth = (float)segment.Thickness,

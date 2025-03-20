@@ -74,6 +74,7 @@ public class PivFigure
 				green = br.ReadByte();
 				blue = br.ReadByte();
 				invAlpha = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipAlphaChannel)) ? br.ReadByte() : (byte)0;
+				pivSeg.Color = new(red / 256f, green / 256f, blue / 256f, 1 - (invAlpha / 256f));
 			}
 
 			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSecondColor))
