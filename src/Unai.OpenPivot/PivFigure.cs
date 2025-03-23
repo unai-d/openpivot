@@ -48,6 +48,7 @@ public class PivFigure
 		var kindFlags = (PivSegmentLayoutFlags)kind;
 		var segmentCount = br.ReadUInt16();
 		Console.Error.WriteLine($"  [fig] type=0x{kind:x}({kind:b8}) {kindFlags} seg#={segmentCount}");
+		Console.Error.WriteLine($"    [seg0] root");
 
 		PivSegmentType firstSegType = 0;
 
@@ -65,7 +66,7 @@ public class PivFigure
 			pivSeg.Thickness = br.ReadSingle();
 
 			pivSeg.SegmentType = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSegmentType)) ? (PivSegmentType)br.ReadByte() : 0;
-			pivSeg.Static = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipStatic)) ? br.ReadByte() > 0 : false;
+			pivSeg.Static = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipStatic)) && br.ReadByte() > 0;
 			
 			byte red = 0, green = 0, blue = 0, invAlpha = 0;
 			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipColor))
@@ -94,7 +95,7 @@ public class PivFigure
 
 			if (segIdx == 0) firstSegType = pivSeg.SegmentType;
 
-			Console.Error.WriteLine($"    [seg{segIdx + 1}] parent={pivSeg.ParentIndex} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={pivSeg.Static} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
+			Console.Error.WriteLine($"    [seg{segIdx + 1}] parent={pivSeg.ParentIndex} {child} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={pivSeg.Static} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
 		}
 
 		Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
@@ -229,12 +230,12 @@ public class PivFigure
 			for (int polyIdx = 0; polyIdx < polygonCount; polyIdx++)
 			{
 				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
-				var unkCount = br.ReadUInt32();
-				br.ReadUInt16();
-				for (int i = 0; i < unkCount; i++)
+				var numVertices = br.ReadUInt16();
+				br.ReadUInt32(); // rgba
+				for (int i = 0; i < numVertices; i++)
 				{
-					var unk1 = br.ReadUInt16();
-					Console.Error.WriteLine($"      [poly{polyIdx}] {unk1}");
+					var vertexValue = br.ReadUInt16();
+					Console.Error.WriteLine($"      [poly{polyIdx}] [vert{i}] {vertexValue}");
 				}
 			}
 		}
@@ -249,7 +250,11 @@ public class PivFigure
 
 		if (!kindFlags.HasFlag(PivSegmentLayoutFlags.Unknown16))
 		{
-			br.ReadBytes(segmentCount * 2);
+			for (int i = 1; i <= segmentCount; i++)
+			{
+				var unk = br.ReadUInt16();
+				Console.Error.WriteLine($"    [poly{i}] ?={unk}");
+			}
 		}
 
 		var figName = br.ReadPivString();

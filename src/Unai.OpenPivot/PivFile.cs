@@ -138,11 +138,11 @@ public class PivFile
 
 				var eUnk0 = br.ReadUInt32();
 				figInst.FigureIndex = br.ReadUInt16();
-				figInst.Scale = br.ReadSingle(); // untested
-				var rotation = br.ReadSingle(); // untested
-				var eUnk1 = br.ReadByte();
+				figInst.Scale = br.ReadSingle();
+				var color = br.ReadUInt32(); // untested
+				var transparency = br.ReadByte(); // untested
 
-				Console.Error.WriteLine($"    [e{eIdx}] {eUnk0:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} rot={rotation} {eUnk1:x2}");
+				Console.Error.WriteLine($"    [e{eIdx}] {eUnk0:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} col={color:x8} {transparency:x2}");
 				
 				var figure = Figures[figInst.FigureIndex];
 				for (int segIdx = 1; segIdx < figure.Segments.Count; segIdx++)
