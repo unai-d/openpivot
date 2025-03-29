@@ -6,6 +6,7 @@ namespace Unai.OpenPivot;
 public class PivSegment
 {
 	public int ParentIndex { get; set; } = -1;
+	public int Index { get; set; } = -1;
 	public double Length { get; set; } = 1;
 	public double Angle { get; set; } = 0;
 	public double Thickness { get; set; } = 8;
@@ -32,7 +33,7 @@ public class PivSegment
 
 		if (ParentIndex >= 0)
 		{
-			ret += figure.Segments[ParentIndex].GetAbsoluteEndPoint(figure);
+			ret += figure.GetSegment(ParentIndex).GetAbsoluteEndPoint(figure);
 		}
 
 		return ret;

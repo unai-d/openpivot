@@ -115,19 +115,25 @@ public sealed partial class MainPage : Page
 			return;
 		}
 
-		void RenderFigureSegment(IList<PivSegment> segments, int segmentIndex, SKPoint origin, List<PivSegmentOverrides> segmentOverrides = null)
+		void RenderFigureSegment(PivFigure figure, int segmentIndex, SKPoint origin, List<PivSegmentOverrides> segmentOverrides = null)
 		{
-			var segment = segments[segmentIndex];
+			var segment = figure.GetSegment(segmentIndex);
 			var relEndPt = segment.EndPoint;
 			if (segmentOverrides != null && segmentOverrides.Count > segmentIndex)
 			{
-				var segOvr = segmentOverrides[segmentIndex];
-				if (segOvr != null && segOvr.Angle.HasValue)
+				var arrSegIdx = figure.GetArrayIndexOfSegmentIndex(segmentIndex);
+				if (arrSegIdx >= 0)
 				{
-					relEndPt = Utils.VectorFromLengthAngle(segment.Length, segOvr.Angle.Value);
+					var segOvr = segmentOverrides[arrSegIdx];
+					if (segOvr != null && segOvr.Angle.HasValue)
+					{
+						relEndPt = Utils.VectorFromLengthAngle(segment.Length, segOvr.Angle.Value);
+					}
 				}
 			}
+			
 			var skEndPoint = origin + new SKPoint(relEndPt.X, relEndPt.Y);
+			var skMidPoint = new SKPoint((origin.X + skEndPoint.X) / 2, (origin.Y + skEndPoint.Y) / 2);
 			var skPaint = new SKPaint
 			{
 				Color = new((byte)(segment.Color.X * 256), (byte)(segment.Color.Y * 256), (byte)(segment.Color.Z * 256)),
@@ -146,7 +152,6 @@ public sealed partial class MainPage : Page
 				case PivSegmentType.Circle:
 				case PivSegmentType.CircleFill:
 				case PivSegmentType.CircleWhiteFill:
-					var skMidPoint = new SKPoint((origin.X + skEndPoint.X) / 2, (origin.Y + skEndPoint.Y) / 2);
 					var circleRadius = (float)segment.Length / 2;
 
 					// Draw Fill
@@ -167,11 +172,11 @@ public sealed partial class MainPage : Page
 					break;
 			}
 
-			for (int branchIdx = 1; branchIdx < segments.Count; branchIdx++)
+			for (int branchIdx = 1; branchIdx < figure.Segments.Count; branchIdx++)
 			{
-				if (segments[branchIdx].ParentIndex == segmentIndex)
+				if (figure.GetSegment(branchIdx).ParentIndex == segmentIndex)
 				{
-					RenderFigureSegment(segments, branchIdx, skEndPoint, segmentOverrides);
+					RenderFigureSegment(figure, branchIdx, skEndPoint, segmentOverrides);
 				}
 			}
 		}
@@ -183,7 +188,7 @@ public sealed partial class MainPage : Page
 			var figure = _pivFile.Figures[figInst.FigureIndex];
 			if (figure != null)
 			{
-				RenderFigureSegment(figure.Segments, 0, new SKPoint(figInst.Position.X, figInst.Position.Y), figInst.SegmentOverrides);
+				RenderFigureSegment(figure, 0, new SKPoint(figInst.Position.X, figInst.Position.Y), figInst.SegmentOverrides);
 			}
 		}
 	}

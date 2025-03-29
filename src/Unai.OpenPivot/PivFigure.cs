@@ -60,7 +60,7 @@ public class PivFigure
 			Segments.Add(pivSeg);
 
 			pivSeg.ParentIndex = br.ReadUInt16();
-			var child = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipMeshFill)) ? br.ReadUInt16() : 0; // TODO: is it really the child ID?
+			pivSeg.Index = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipMeshFill)) ? br.ReadUInt16() : (segIdx + 1); // called “EndPoint.”
 			pivSeg.Length = br.ReadSingle();
 			pivSeg.Angle = br.ReadDouble();
 			pivSeg.Thickness = br.ReadSingle();
@@ -95,7 +95,7 @@ public class PivFigure
 
 			if (segIdx == 0) firstSegType = pivSeg.SegmentType;
 
-			Console.Error.WriteLine($"    [seg{segIdx + 1}] parent={pivSeg.ParentIndex} {child} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={pivSeg.Static} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
+			Console.Error.WriteLine($"    [seg{segIdx}] idx={pivSeg.Index} parent={pivSeg.ParentIndex} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={pivSeg.Static} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
 		}
 
 		Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
@@ -259,5 +259,15 @@ public class PivFigure
 
 		var figName = br.ReadPivString();
 		Console.Error.WriteLine($"    figName='{figName}'");
+	}
+
+	public PivSegment GetSegment(int index)
+	{
+		return Segments.FirstOrDefault(s => s.Index == index) ?? Segments[index];
+	}
+
+	public int GetArrayIndexOfSegmentIndex(int index)
+	{
+		return Segments.FindIndex(s => s.Index == index);
 	}
 }
