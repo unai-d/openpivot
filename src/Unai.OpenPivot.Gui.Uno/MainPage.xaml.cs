@@ -97,13 +97,13 @@ public sealed partial class MainPage : Page
 
 		canvas.Scale(scale);
 
-		canvas.Clear(new(255, 255, 255));
+		canvas.Clear(new(128, 128, 128));
 
 		if (_pivFile == null)
 		{
 			var paint = new SKPaint
 			{
-				Color = SKColors.DimGray,
+				Color = SKColors.Black,
 				IsAntialias = true,
 				Style = SKPaintStyle.Fill,
 				TextAlign = SKTextAlign.Center,
@@ -127,7 +127,7 @@ public sealed partial class MainPage : Page
 					var skPaint = new SKPaint
 					{
 						Style = SKPaintStyle.Fill,
-						Color = new((byte)(frameBg.Color.X * 256), (byte)(frameBg.Color.Y * 256), (byte)(frameBg.Color.Z * 256)),
+						Color = Utils.Vector4ToSKColor(frameBg.Color),
 					};
 					canvas.DrawRect(new(0, 0, 640, 360), skPaint);
 				}
@@ -141,8 +141,8 @@ public sealed partial class MainPage : Page
 							new SKPoint(frameBg.GradientStart.X * 640, frameBg.GradientStart.Y * 360),
 							new SKPoint(frameBg.GradientEnd.X * 640, frameBg.GradientEnd.Y * 360),
 							[
-								new((byte)(frameBg.Color.X * 256), (byte)(frameBg.Color.Y * 256), (byte)(frameBg.Color.Z * 256)),
-								new((byte)(frameBg.SecondColor.X * 256), (byte)(frameBg.SecondColor.Y * 256), (byte)(frameBg.SecondColor.Z * 256)),
+								Utils.Vector4ToSKColor(frameBg.Color),
+								Utils.Vector4ToSKColor(frameBg.SecondColor),
 							],
 							SKShaderTileMode.Clamp
 						)
@@ -164,7 +164,7 @@ public sealed partial class MainPage : Page
 					var segOvr = segmentOverrides[arrSegIdx];
 					if (segOvr != null && segOvr.Angle.HasValue)
 					{
-						relEndPt = Utils.VectorFromLengthAngle(segment.Length, segOvr.Angle.Value);
+						relEndPt = OpenPivot.Utils.VectorFromLengthAngle(segment.Length, segOvr.Angle.Value);
 					}
 				}
 			}
@@ -173,7 +173,7 @@ public sealed partial class MainPage : Page
 			var skMidPoint = new SKPoint((origin.X + skEndPoint.X) / 2, (origin.Y + skEndPoint.Y) / 2);
 			var skPaint = new SKPaint
 			{
-				Color = new((byte)(segment.Color.X * 256), (byte)(segment.Color.Y * 256), (byte)(segment.Color.Z * 256)),
+				Color = Utils.Vector4ToSKColor(segment.Color),
 				Style = SKPaintStyle.Stroke,
 				IsAntialias = true,
 				StrokeWidth = (float)segment.Thickness,
