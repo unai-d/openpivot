@@ -32,7 +32,7 @@ public class PivFile
 			using var zlibStr = new ZLibStream(stream, CompressionMode.Decompress);
 			using var memStr = new MemoryStream();
 			zlibStr.CopyTo(memStr);
-			Console.Error.WriteLine($"Uncompressed PIV file size: {memStr.Length}");
+			Logger.Debug($"Uncompressed PIV file size: {memStr.Length}");
 			memStr.Position = 0;
 			Load(memStr);
 			return;
@@ -40,11 +40,11 @@ public class PivFile
 
 		var canvasWidth = br.ReadUInt32();
 		var canvasHeight = br.ReadUInt32();
-		Console.Error.WriteLine($"v{pivAniVersion} {canvasWidth}×{canvasHeight}");
+		Logger.Debug($"v{pivAniVersion} {canvasWidth}×{canvasHeight}");
 
 		var backgroundCount = br.ReadUInt16(); // 1, 2 or 3
-		Console.Error.WriteLine($"bg#={backgroundCount}");
-		Console.Error.WriteLine($"  [bg0] default");
+		Logger.Debug($"bg#={backgroundCount}");
+		Logger.Debug($"  [bg0] default");
 		for (int bgIdx = 1; bgIdx < backgroundCount; bgIdx++)
 		{
 			var background = new PivBackground();
@@ -72,7 +72,7 @@ public class PivFile
 
 						var bgName = br.ReadPivString();
 
-						Console.Error.WriteLine($"  [bg{bgIdx}] '{bgName}' size={imageDataSize}");
+						Logger.Debug($"  [bg{bgIdx}] '{bgName}' size={imageDataSize}");
 					}
 					break;
 
@@ -109,10 +109,10 @@ public class PivFile
 						}
 
 						var bgName = br.ReadPivString();
-						Console.Error.WriteLine($"  [bg{bgIdx}] type={background.Type} '{bgName}'");
+						Logger.Debug($"  [bg{bgIdx}] type={background.Type} '{bgName}'");
 						if (background.Type == PivBackroundType.Gradient)
 						{
-							Console.Error.WriteLine($"    grad. start={x0}:{y0} end={x1}:{y1}");
+							Logger.Debug($"    grad. start={x0}:{y0} end={x1}:{y1}");
 						}
 					}
 					break;
@@ -121,9 +121,9 @@ public class PivFile
 
 		var figureCount = br.ReadUInt16();
 
-		Console.Error.WriteLine($"fig#={figureCount}");
-		Console.Error.WriteLine("  [fig0] null?");
-		Console.Error.WriteLine("  [fig1] default?");
+		Logger.Debug($"fig#={figureCount}");
+		Logger.Debug("  [fig0] null?");
+		Logger.Debug("  [fig1] default?");
 
 		for (int figIdx = 2; figIdx < figureCount; figIdx++)
 		{
@@ -131,7 +131,7 @@ public class PivFile
 		}
 
 		var frameCount = br.ReadUInt32();
-		Console.Error.WriteLine($"fr#={frameCount}");
+		Logger.Debug($"fr#={frameCount}");
 
 		for (int f = 0; f < frameCount; f++)
 		{
@@ -143,14 +143,14 @@ public class PivFile
 			var unk2 = br.ReadByte();
 			var elementCount = br.ReadUInt16();
 
-			Console.Error.WriteLine($"  [fr{f}] bg={bgIdx} {unk1:x4} {unk2:x2} elem#={elementCount}");
+			Logger.Debug($"  [fr{f}] bg={bgIdx} {unk1:x4} {unk2:x2} elem#={elementCount}");
 
 			for (int eIdx = 0; eIdx < elementCount; eIdx++)
 			{
 				var figInst = new PivFigureInstance();
 				frame.FigureInstances.Add(figInst);
 
-				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+				Logger.Debug(Utils.GetBufferHexString(br, 32));
 
 				var eUnk0 = br.ReadUInt32();
 				figInst.FigureIndex = br.ReadUInt16();
@@ -158,14 +158,14 @@ public class PivFile
 				var color = br.ReadUInt32(); // untested
 				var transparency = br.ReadByte(); // untested
 
-				Console.Error.WriteLine($"    [e{eIdx}] {eUnk0:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} col={color:x8} {transparency:x2}");
+				Logger.Debug($"    [e{eIdx}] {eUnk0:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} col={color:x8} {transparency:x2}");
 				
 				var figure = Figures[figInst.FigureIndex];
 				for (int segIdx = 1; segIdx < figure.Segments.Count; segIdx++)
 				{
 					var segAngle = br.ReadDouble();
 					figInst.SegmentOverrides.Add(new(segAngle));
-					Console.Error.WriteLine($"        [seg{segIdx}] angle={Utils.ToDegrees(segAngle)}");
+					Logger.Debug($"        [seg{segIdx}] angle={Utils.ToDegrees(segAngle)}");
 				}
 
 				if (figure.Segments[1].SegmentType == PivSegmentType.Text)
@@ -178,15 +178,15 @@ public class PivFile
 				figInst.Position = new(x, y);
 				var eUnk2 = br.ReadBytes(5); // always 0
 
-				Console.Error.WriteLine($"      x={x} y={y} {Utils.ToHex(eUnk2)}");
+				Logger.Debug($"      x={x} y={y} {Utils.ToHex(eUnk2)}");
 			}
 
 			br.ReadBytes(1 + elementCount * 2);
 		}
 
-		Console.Error.WriteLine("tail (must be 5 bytes):\n" + Utils.GetBufferHexString(br, 16));
+		Logger.Debug("tail (must be 5 bytes):\n" + Utils.GetBufferHexString(br, 16));
 
 		var framerate = br.ReadUInt32();
-		Console.Error.WriteLine($"fps={framerate}");
+		Logger.Debug($"fps={framerate}");
 	}
 }

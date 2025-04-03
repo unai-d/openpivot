@@ -47,14 +47,14 @@ public class PivFigure
 		var kind = br.ReadByte();
 		var kindFlags = (PivSegmentLayoutFlags)kind;
 		var segmentCount = br.ReadUInt16();
-		Console.Error.WriteLine($"  [fig] type=0x{kind:x}({kind:b8}) {kindFlags} seg#={segmentCount}");
-		Console.Error.WriteLine($"    [seg0] root");
+		Logger.Debug($"  [fig] type=0x{kind:x}({kind:b8}) {kindFlags} seg#={segmentCount}");
+		Logger.Debug($"    [seg0] root");
 
 		PivSegmentType firstSegType = 0;
 
 		for (int segIdx = 0; segIdx < segmentCount; segIdx++)
 		{
-			Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+			Logger.Trace(Utils.GetBufferHexString(br, 32));
 
 			PivSegment pivSeg = new();
 			Segments.Add(pivSeg);
@@ -95,14 +95,14 @@ public class PivFigure
 
 			if (segIdx == 0) firstSegType = pivSeg.SegmentType;
 
-			Console.Error.WriteLine($"    [seg{segIdx}] idx={pivSeg.Index} parent={pivSeg.ParentIndex} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={pivSeg.Static} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
+			Logger.Debug($"    [seg{segIdx}] idx={pivSeg.Index} parent={pivSeg.ParentIndex} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={pivSeg.Static} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
 		}
 
-		Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+		Logger.Trace(Utils.GetBufferHexString(br, 32));
 		
 		// bends
 		var bendCount = br.ReadUInt16();
-		Console.Error.WriteLine($"    bend#={bendCount}");
+		Logger.Debug($"    bend#={bendCount}");
 		if (bendCount > segmentCount)
 		{
 			throw new InvalidDataException();
@@ -113,7 +113,7 @@ public class PivFigure
 			{
 				var bendSegIdx = br.ReadUInt16();
 				var bendAngle = Utils.ToDegrees(br.ReadDouble());
-				Console.Error.WriteLine($"    {bendSegIdx} bend={bendAngle}");
+				Logger.Debug($"    {bendSegIdx} bend={bendAngle}");
 			}
 		}
 
@@ -121,16 +121,16 @@ public class PivFigure
 		if (firstSegType == PivSegmentType.Image)
 		{
 			var imageCount = br.ReadUInt16();
-			Console.Error.WriteLine($"    img#={imageCount}");
+			Logger.Debug($"    img#={imageCount}");
 		}
 
 		// text data
 		if (firstSegType == PivSegmentType.Text)
 		{
-			Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+			Logger.Trace(Utils.GetBufferHexString(br, 32));
 			var unk1 = br.ReadByte();
 			var unk2 = br.ReadByte();
-			Console.Error.WriteLine($"    {unk1:x2} {unk2:x2}");
+			Logger.Debug($"    {unk1:x2} {unk2:x2}");
 
 			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSecondColor)) // why?
 			{
@@ -140,14 +140,14 @@ public class PivFigure
 			var boldItaFlags = br.ReadByte(); // bold = 1, italics = 2
 			var unk3 = br.ReadUInt32();
 			var text = br.ReadPivLEString();
-			Console.Error.WriteLine($"    font='{fontName}' text='{text}' bif=0x{boldItaFlags:x2} {unk3:x4}");
+			Logger.Debug($"    font='{fontName}' text='{text}' bif=0x{boldItaFlags:x2} {unk3:x4}");
 
 			// TODO: some parts contain unknown data. expect errors.
 			var uniqueChars = br.ReadByte();
 			List<uint> charPaths = [];
 			for (int c = 0; c < uniqueChars; c++)
 			{
-				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+				Logger.Trace(Utils.GetBufferHexString(br, 32));
 
 				// stuff like newlines, spaces and tabs don't render anything and thus don't have path data (runlen = 0).
 				var instructionCount = br.ReadUInt32();
@@ -207,35 +207,35 @@ public class PivFigure
 
 			for (int i = 0; i < text.Length; i++)
 			{
-				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
-				Console.Error.WriteLine($"    {i}/{text.Length}");
+				Logger.Trace(Utils.GetBufferHexString(br, 32));
+				Logger.Debug($"    {i}/{text.Length}");
 				if (!char.IsWhiteSpace(text[i]))
 				{
 					var v1 = br.ReadSingle();
 					var v2 = br.ReadSingle();
-					Console.Error.WriteLine($"    {v1} {v2}");
+					Logger.Debug($"    {v1} {v2}");
 				}
 				else
 				{
-					Console.Error.WriteLine($"    skip");
+					Logger.Debug($"    skip");
 				}
 			}
 		}
 
 		// polygon data
 		var polygonCount = br.ReadUInt16();
-		Console.Error.WriteLine($"    poly#={polygonCount}");
+		Logger.Debug($"    poly#={polygonCount}");
 		if (polygonCount > 0)
 		{
 			for (int polyIdx = 0; polyIdx < polygonCount; polyIdx++)
 			{
-				Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+				Logger.Trace(Utils.GetBufferHexString(br, 32));
 				var numVertices = br.ReadUInt16();
 				br.ReadUInt32(); // rgba
 				for (int i = 0; i < numVertices; i++)
 				{
 					var vertexValue = br.ReadUInt16();
-					Console.Error.WriteLine($"      [poly{polyIdx}] [vert{i}] {vertexValue}");
+					Logger.Debug($"      [poly{polyIdx}] [vert{i}] {vertexValue}");
 				}
 			}
 		}
@@ -246,19 +246,19 @@ public class PivFigure
 			br.ReadUInt32();
 		}
 
-		Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+		Logger.Trace(Utils.GetBufferHexString(br, 32));
 
 		if (!kindFlags.HasFlag(PivSegmentLayoutFlags.Unknown16))
 		{
 			for (int i = 1; i <= segmentCount; i++)
 			{
 				var unk = br.ReadUInt16();
-				Console.Error.WriteLine($"    [poly{i}] ?={unk}");
+				Logger.Debug($"    [poly{i}] ?={unk}");
 			}
 		}
 
 		var figName = br.ReadPivString();
-		Console.Error.WriteLine($"    figName='{figName}'");
+		Logger.Debug($"    figName='{figName}'");
 	}
 
 	public PivSegment GetSegment(int index)
