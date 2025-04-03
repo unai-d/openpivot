@@ -115,6 +115,43 @@ public sealed partial class MainPage : Page
 			return;
 		}
 
+		if (_pivFile.Frames.Count == 0) return;
+
+		var frameBgIdx = _pivFile.Backgrounds.Count - 1; // TODO
+		var frameBg = _pivFile.Backgrounds[frameBgIdx];
+
+		switch (frameBg.Type)
+		{
+			case PivBackroundType.SolidColor:
+				{
+					var skPaint = new SKPaint
+					{
+						Style = SKPaintStyle.Fill,
+						Color = new((byte)(frameBg.Color.X * 256), (byte)(frameBg.Color.Y * 256), (byte)(frameBg.Color.Z * 256)),
+					};
+					canvas.DrawRect(new(0, 0, 640, 360), skPaint);
+				}
+				break;
+
+			case PivBackroundType.Gradient:
+				{
+					var skPaint = new SKPaint
+					{
+						Shader = SKShader.CreateLinearGradient(
+							new SKPoint(frameBg.GradientStart.X * 640, frameBg.GradientStart.Y * 360),
+							new SKPoint(frameBg.GradientEnd.X * 640, frameBg.GradientEnd.Y * 360),
+							[
+								new((byte)(frameBg.Color.X * 256), (byte)(frameBg.Color.Y * 256), (byte)(frameBg.Color.Z * 256)),
+								new((byte)(frameBg.SecondColor.X * 256), (byte)(frameBg.SecondColor.Y * 256), (byte)(frameBg.SecondColor.Z * 256)),
+							],
+							SKShaderTileMode.Clamp
+						)
+					};
+					canvas.DrawRect(new(0, 0, 640, 360), skPaint);
+				}
+				break;
+		}
+
 		void RenderFigureSegment(PivFigure figure, int segmentIndex, SKPoint origin, List<PivSegmentOverrides> segmentOverrides = null)
 		{
 			var segment = figure.GetSegment(segmentIndex);
@@ -180,8 +217,6 @@ public sealed partial class MainPage : Page
 				}
 			}
 		}
-
-		if (_pivFile.Frames.Count == 0) return;
 
 		foreach (var figInst in _pivFile.Frames[_currentFrame].FigureInstances)
 		{
