@@ -41,7 +41,7 @@ public sealed partial class MainPage : Page
 	private async void OnLoaded(object sender, RoutedEventArgs e)
 	{
 		_pivFile.Frames.Add(new());
-		_pivFile.Frames[0].FigureInstances.Add(new() { FigureIndex = 1, Position = new(320, 180) });
+		_pivFile.Frames[0].FigureInstances.Add(new() { FigureIndex = 1, Position = new(_pivFile.CanvasWidth / 2, _pivFile.CanvasHeight / 2) });
 	}
 
 	private void OnSurfacePointerMoved(object sender, PointerRoutedEventArgs e)
@@ -85,7 +85,8 @@ public sealed partial class MainPage : Page
 		var scale = (float)(XamlRoot?.RasterizationScale ?? 1);
 		var scaledSize = new SKSize((float)size.Width / scale, (float)size.Height / scale);
 
-		canvas.Scale(scale);
+		var vpMatrix = SKMatrix.CreateScaleTranslation(scale, scale, (float)(size.Width / 2) - (_pivFile.CanvasWidth / 2), (float)(size.Height / 2) - (_pivFile.CanvasHeight / 2));
+		canvas.SetMatrix(vpMatrix);
 
 		canvas.Clear(new(128, 128, 128));
 
@@ -108,7 +109,7 @@ public sealed partial class MainPage : Page
 						Style = SKPaintStyle.Fill,
 						Color = Utils.Vector4ToSKColor(frameBg.Color),
 					};
-					canvas.DrawRect(new(0, 0, 640, 360), skPaint);
+					canvas.DrawRect(new(0, 0, _pivFile.CanvasWidth, _pivFile.CanvasHeight), skPaint);
 				}
 				break;
 
@@ -117,8 +118,8 @@ public sealed partial class MainPage : Page
 					var skPaint = new SKPaint
 					{
 						Shader = SKShader.CreateLinearGradient(
-							new SKPoint(frameBg.GradientStart.X * 640, frameBg.GradientStart.Y * 360),
-							new SKPoint(frameBg.GradientEnd.X * 640, frameBg.GradientEnd.Y * 360),
+							new SKPoint(frameBg.GradientStart.X * _pivFile.CanvasWidth, frameBg.GradientStart.Y * _pivFile.CanvasHeight),
+							new SKPoint(frameBg.GradientEnd.X * _pivFile.CanvasWidth, frameBg.GradientEnd.Y * _pivFile.CanvasHeight),
 							[
 								Utils.Vector4ToSKColor(frameBg.Color),
 								Utils.Vector4ToSKColor(frameBg.SecondColor),
@@ -126,7 +127,7 @@ public sealed partial class MainPage : Page
 							SKShaderTileMode.Clamp
 						)
 					};
-					canvas.DrawRect(new(0, 0, 640, 360), skPaint);
+					canvas.DrawRect(new(0, 0, _pivFile.CanvasWidth, _pivFile.CanvasHeight), skPaint);
 				}
 				break;
 		}

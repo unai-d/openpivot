@@ -7,6 +7,10 @@ namespace Unai.OpenPivot;
 
 public class PivFile
 {
+	public int PivotAnimatorVersion { get; set; } = 5;
+	public int CanvasWidth { get; set; } = 640;
+	public int CanvasHeight { get; set; } = 360;
+
 	public List<PivBackground> Backgrounds { get; } =
 	[
 		new(),
@@ -24,9 +28,9 @@ public class PivFile
 	{
 		using var br = new BinaryReader(stream);
 
-		var pivAniVersion = br.ReadByte();
+		PivotAnimatorVersion = br.ReadByte();
 
-		if (pivAniVersion == 'x')
+		if (PivotAnimatorVersion == 'x')
 		{
 			stream.Position = 0;
 			using var zlibStr = new ZLibStream(stream, CompressionMode.Decompress);
@@ -38,9 +42,9 @@ public class PivFile
 			return;
 		}
 
-		var canvasWidth = br.ReadUInt32();
-		var canvasHeight = br.ReadUInt32();
-		Logger.Debug($"v{pivAniVersion} {canvasWidth}×{canvasHeight}");
+		CanvasWidth = br.ReadInt32();
+		CanvasHeight = br.ReadInt32();
+		Logger.Debug($"v{PivotAnimatorVersion} {CanvasWidth}×{CanvasHeight}");
 
 		var backgroundCount = br.ReadUInt16(); // 1, 2 or 3
 		Logger.Debug($"bg#={backgroundCount}");
