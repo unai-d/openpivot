@@ -1,0 +1,49 @@
+name: OpenPivot Build and Deploy
+on:
+  pull_request:
+    branches: [ main, dev ]
+  push:
+    branches: [ main, dev ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    env:
+      config: 'Release'
+      framework: 'net8.0-browserwasm'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore Dependencies
+      run: dotnet restore ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj
+    - name: Build 
+      run: dotnet build ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --no-restore -f $framework -c $config
+    - name: Publish Artifacts
+      uses: actions/upload-artifact@v1.0.0
+      if: github.event_name == 'workflow_dispatch'
+      with:
+        name: pages
+        path: ./src/Unai.OpenPivot.Gui.Uno/bin/${{env.config}}/${{env.framework}}/dist/
+  deploy:
+    needs: build 
+    runs-on: ubuntu-latest
+    name: Deploy
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: pages
+        path: dist        
+    - name: Deploy to GitHub Pages
+      uses: crazy-max/ghaction-github-pages@v2
+      with:
+        target_branch: gh-pages
+        build_dir: ./dist/
+        jekyll: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
