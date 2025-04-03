@@ -42,4 +42,9 @@ public static class Utils
 	{
 		return new((float)(length * Math.Cos(angle)), (float)(length * Math.Sin(angle)));
 	}
+
+	public static Vector4 RgbaToVector4(byte r, byte g, byte b, byte a)
+	{
+		return new(r / 256f, g / 256f, b / 256f, a / 256f);
+	}
 }

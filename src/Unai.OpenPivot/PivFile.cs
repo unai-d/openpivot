@@ -7,6 +7,11 @@ namespace Unai.OpenPivot;
 
 public class PivFile
 {
+	public List<PivBackground> Backgrounds { get; } =
+	[
+		new(),
+	];
+
 	public List<PivFigure> Figures { get; } =
 	[
 		null,
@@ -42,37 +47,44 @@ public class PivFile
 		Console.Error.WriteLine($"  [bg0] default");
 		for (int bgIdx = 1; bgIdx < backgroundCount; bgIdx++)
 		{
-			// 0 = PNG, 1 = JPEG, 2 = solid, 3 = gradient
-			var kind = br.ReadByte();
+			var background = new PivBackground();
+			Backgrounds.Add(background);
 
-			switch (kind)
+			// 0 = PNG, 1 = JPEG, 2 = solid, 3 = gradient
+			background.Type = (PivBackroundType)br.ReadByte();
+
+			switch (background.Type)
 			{
-				case 0:
-				case 1:
+				case PivBackroundType.PNG:
+				case PivBackroundType.JPEG:
 					{
-						// Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
+						// Layout: [end of image offset][image data]
+						//           ↓                    ↓
+						//          32-bit               variable size
 
 						var imageDataOff = br.BaseStream.Position + sizeof(uint);
 						var imageDataEndOff = br.ReadUInt32();
-						var size = imageDataEndOff - imageDataOff;
+						var imageDataSize = imageDataEndOff - imageDataOff;
+
+						background.ImageData = br.ReadBytes((int)imageDataSize);
 
 						br.BaseStream.Position = imageDataEndOff;
 
-						// Console.Error.WriteLine(Utils.GetBufferHexString(br, 32));
-
 						var bgName = br.ReadPivString();
 
-						Console.Error.WriteLine($"  [bg{bgIdx}] '{bgName}' size={size}");
+						Console.Error.WriteLine($"  [bg{bgIdx}] '{bgName}' size={imageDataSize}");
 					}
 					break;
 
-				case 2:
-				case 3:
+				case PivBackroundType.SolidColor:
+				case PivBackroundType.Gradient:
 					{
 						var blue0 = br.ReadByte();
 						var green0 = br.ReadByte();
 						var red0 = br.ReadByte();
 						var alpha0 = br.ReadByte();
+						background.Color = Utils.RgbaToVector4(red0, green0, blue0, alpha0);
+
 						byte blue1 = 0;
 						byte green1 = 0;
 						byte red1 = 0;
@@ -81,7 +93,7 @@ public class PivFile
 						float y0 = 0;
 						float x1 = 0;
 						float y1 = 0;
-						if (kind == 3)
+						if (background.Type == PivBackroundType.Gradient)
 						{
 							blue1 = br.ReadByte();
 							green1 = br.ReadByte();
@@ -91,12 +103,16 @@ public class PivFile
 							y0 = br.ReadSingle();
 							x1 = br.ReadSingle();
 							y1 = br.ReadSingle();
+							background.SecondColor = Utils.RgbaToVector4(red1, green1, blue1, alpha1);
+							background.GradientStart = new(x0, y0);
+							background.GradientEnd = new(x1, y1);
 						}
+
 						var bgName = br.ReadPivString();
-						Console.Error.WriteLine($"  [bg{bgIdx}] type={kind} '{bgName}'");
-						if (kind == 3)
+						Console.Error.WriteLine($"  [bg{bgIdx}] type={background.Type} '{bgName}'");
+						if (background.Type == PivBackroundType.Gradient)
 						{
-							Console.Error.WriteLine($"    pulls {x0}:{y0} {x1}:{y1}");
+							Console.Error.WriteLine($"    grad. start={x0}:{y0} end={x1}:{y1}");
 						}
 					}
 					break;
