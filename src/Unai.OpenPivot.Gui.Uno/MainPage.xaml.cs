@@ -9,6 +9,8 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using Windows.Storage.Pickers;
 using System.Threading.Tasks;
+using Windows.UI.Text;
+using Microsoft.UI.Xaml.Documents;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -254,5 +256,26 @@ public sealed partial class MainPage : Page
 	{
 		App.Current.Exit();
 		Environment.Exit(0);
+	}
+
+	public async Task OnAboutBoxShow(object sender, RoutedEventArgs e)
+	{
+		var repoLink = new Hyperlink() { NavigateUri = new("https://github.com/unai-d/openpivot") };
+		repoLink.Inlines.Add(new Run() { Text = "GitHub Repository" });
+
+		var buildString = new TextBlock() { TextWrapping = TextWrapping.Wrap };
+		buildString.Inlines.Add(new Run() { Text = "OpenPivot version 0.1" });
+		buildString.Inlines.Add(new LineBreak());
+		buildString.Inlines.Add(repoLink);
+
+		var aboutBox = new ContentDialog()
+		{
+			Title = "About OpenPivot",
+			Content = buildString,
+			CloseButtonText = "OK",
+			XamlRoot = XamlRoot,
+		};
+
+		await aboutBox.ShowAsync();
 	}
 }

@@ -30,7 +30,7 @@
 				<MenuFlyoutItem Text="Redo" Icon="Redo" />
 			</MenuBarItem>
 			<MenuBarItem Title="Help">
-				<MenuFlyoutItem Text="About…" />
+				<MenuFlyoutItem Text="About…" Click="OnAboutBoxShow" />
 			</MenuBarItem>
 		</MenuBar>
 
