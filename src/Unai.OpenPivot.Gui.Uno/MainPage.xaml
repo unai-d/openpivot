@@ -34,7 +34,7 @@
 			</MenuBarItem>
 		</MenuBar>
 
-		<utu:TabBar Grid.Row="1" Style="{StaticResource TopTabBarStyle}" SelectedIndex="0">
+		<utu:TabBar x:Name="_uiMainTabBar" Grid.Row="1" Style="{StaticResource TopTabBarStyle}" SelectedIndex="0" SelectionChanged="{x:Bind OnSectionChange}">
 			<utu:TabBar.Items>
 				<utu:TabBarItem Icon="View" Content="Animator" />
 				<utu:TabBarItem Icon="Edit" Content="Designer" />
@@ -47,7 +47,7 @@
 			<muxc:NumberBox x:Name="_frameNumBox" Value="0" SpinButtonPlacementMode="Compact" ValueChanged="{x:Bind OnFrameNumberBoxChange}" />
 		</StackPanel>
 
-		<Grid x:Name="panelGrid" Grid.Row="3">
+		<Grid x:Name="panelGrid" Grid.Row="3" Visibility="Visible">
 			<sk:SKSwapChainPanel x:Name="swapChain"
 				PaintSurface="OnPaintSwapChain"
 				PointerMoved="{x:Bind OnSurfacePointerMoved}"
@@ -62,5 +62,9 @@
 				not_win:Background="Transparent"
 				Visibility="{x:Bind Not(hwAcceleration.IsChecked), Mode=OneWay}" />
 		</Grid>
+
+		<TextBlock x:Name="_uiFigureMgr" Grid.Row="3" Visibility="Collapsed">
+			Work in progress!
+		</TextBlock>
 	</Grid>
 </Page>

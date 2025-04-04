@@ -9,10 +9,8 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using Windows.Storage.Pickers;
 using System.Threading.Tasks;
-using Windows.UI.Text;
 using Microsoft.UI.Xaml.Documents;
-
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+using Uno.Toolkit.UI;
 
 namespace Unai.OpenPivot.Gui.Uno;
 
@@ -20,8 +18,13 @@ public sealed partial class MainPage : Page
 {
 	private Point _currentPosition;
 	private int _currentFrame = 0;
+	private MainPageSectionId _currentSection = MainPageSectionId.AnimationManager;
 
 	private PivFile _pivFile = new();
+
+	// public int CurrentSectionNumber { get => (int)_currentSection; set { _currentSection = (MainPageSectionId)value; }}
+	// internal Visibility CurrentSectionIsAnimator => _currentSection == MainPageSectionId.AnimationManager ? Visibility.Visible : Visibility.Collapsed;
+	// internal Visibility CurrentSectionIsDesigner => _currentSection == MainPageSectionId.FigureManager ? Visibility.Visible : Visibility.Collapsed;
 
 	public MainPage()
 	{
@@ -40,7 +43,7 @@ public sealed partial class MainPage : Page
 
 	private Visibility Not(bool? value) => (!value ?? false) ? Visibility.Visible : Visibility.Collapsed;
 
-	private async void OnLoaded(object sender, RoutedEventArgs e)
+	private void OnLoaded(object sender, RoutedEventArgs e)
 	{
 		_pivFile.Frames.Add(new());
 		_pivFile.Frames[0].FigureInstances.Add(new() { FigureIndex = 1, Position = new(_pivFile.CanvasWidth / 2, _pivFile.CanvasHeight / 2) });
@@ -277,5 +280,12 @@ public sealed partial class MainPage : Page
 		};
 
 		await aboutBox.ShowAsync();
+	}
+
+	public async Task OnSectionChange(object sender, TabBarSelectionChangedEventArgs e)
+	{
+		_currentSection = (MainPageSectionId)_uiMainTabBar.SelectedIndex;
+		panelGrid.Visibility = _currentSection == MainPageSectionId.AnimationManager ? Visibility.Visible : Visibility.Collapsed;
+		_uiFigureMgr.Visibility = _currentSection == MainPageSectionId.FigureManager ? Visibility.Visible : Visibility.Collapsed;
 	}
 }
