@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using Unai.OpenPivot;
+using Spectre.Console;
 
 namespace Unai.OpenPivot.Cli;
 
@@ -10,7 +10,7 @@ class Program
 	{
 		Logger.EmitMessage += Logger.PrintLogMessageToConsole;
 
-		Spectre.Console.AnsiConsole.MarkupLine("[bold]OpenPivot[/]");
+		AnsiConsole.MarkupLine("[bold]OpenPivot[/]");
 
 		string pivDirPath = "../../samples";
 
