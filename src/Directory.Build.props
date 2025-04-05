@@ -3,6 +3,7 @@
 		<!-- <ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable> -->
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 
 		<!--
 		Adding NoWarn to remove build warnings
