@@ -21,7 +21,7 @@ jobs:
         cache: true
         cache-dependency-path: ./src/Unai.OpenPivot.Gui.Uno/packages.lock.json
     - name: Restore Dependencies
-      run: dotnet restore ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --locked-mode
+      run: dotnet restore ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --locked-mode --force-evaluate
     - name: Build 
       run: dotnet build ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --no-restore -f $framework -c $config
     - name: Publish Artifacts
