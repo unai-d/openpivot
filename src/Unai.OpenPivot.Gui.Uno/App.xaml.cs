@@ -24,7 +24,7 @@ public partial class App : Application
 
 		_mainWin = new Window();
 		#if DEBUG
-		_mainWin.EnableHotReload();
+		_mainWin.UseStudio();
 		#endif
 
 		// Ensure that the window is active.
