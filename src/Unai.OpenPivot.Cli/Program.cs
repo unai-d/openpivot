@@ -12,20 +12,44 @@ class Program
 
 		AnsiConsole.MarkupLine("[bold]OpenPivot[/]");
 
-		string pivDirPath = "../../samples";
-
-		foreach (var pivFilePath in Directory.GetFileSystemEntries(pivDirPath, args.Length > 0 ? args[0] : "*.piv"))
+		if (args.Length < 1)
 		{
-			Logger.Info($"\x1b[92m{pivFilePath}\x1b[0m");
-			try
+			AnsiConsole.MarkupLine($"[bold]Usage[/]: Unai.OpenPivot.Cli [yellow]<piv_file_path>[/]");
+			AnsiConsole.MarkupLine($"  File path can also be a glob pattern (e.g.: [white on gray]C:\\*.piv[/])");
+			return;
+		}
+
+		if (args[0].Contains('*')) // FIXME: only works with relative paths
+		{
+			foreach (var pivFilePath in Directory.GetFileSystemEntries(".", args[0]))
 			{
-				var pivProj = new PivFile();
-				pivProj.Load(File.OpenRead(pivFilePath));
+				ProcessPivFile(pivFilePath);
 			}
-			catch (Exception ex)
+		}
+		else if (Directory.Exists(args[0]))
+		{
+			foreach (var pivFilePath in Directory.GetFileSystemEntries(args[0]))
 			{
-				Console.WriteLine(ex);
+				ProcessPivFile(pivFilePath);
 			}
+		}
+		else
+		{
+			ProcessPivFile(args[0]);
+		}
+	}
+
+	static void ProcessPivFile(string pivFilePath)
+	{
+		AnsiConsole.Write($"[green]{pivFilePath}[/]");
+		try
+		{
+			var pivProj = new PivFile();
+			pivProj.Load(File.OpenRead(pivFilePath));
+		}
+		catch (Exception ex)
+		{
+			AnsiConsole.WriteException(ex);
 		}
 	}
 }
