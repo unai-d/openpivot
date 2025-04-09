@@ -142,66 +142,55 @@ public class PivFigure
 			var text = br.ReadPivLEString();
 			Logger.Debug($"    font='{fontName}' text='{text}' bif=0x{boldItaFlags:x2} {unk3:x4}");
 
-			// TODO: some parts contain unknown data. expect errors.
 			var uniqueChars = br.ReadByte();
 			List<uint> charPaths = [];
 			for (int c = 0; c < uniqueChars; c++)
 			{
 				Logger.Trace(Utils.GetBufferHexString(br, 32));
 
-				// stuff like newlines, spaces and tabs don't render anything and thus don't have path data (runlen = 0).
+				// stuff like newlines, spaces and tabs don't render anything and thus don't have path data (instructionCount = 0).
 				var instructionCount = br.ReadUInt32();
 				charPaths.Add(instructionCount);
 
-				byte pathOpCode = 0;
-				List<byte> pathOpCodes = Enumerable.Repeat((byte)0, (int)(instructionCount * 4)).ToList();
-				int i = 0;
-				if (instructionCount > 0)
+				List<byte> pathOpCodes = Enumerable.Repeat((byte)0, (int)instructionCount * 4).ToList();
+				
+				for (int i = 0; i < instructionCount; i++)
 				{
-					do
+					var opCodePair = br.ReadByte();
+					for (int j = 0; i < instructionCount && (j < 8); j += 4)
 					{
-						var opCodePair = br.ReadByte();
-						for (int j = 0; i < instructionCount && (j < 8); j += 4)
-						{
-							pathOpCode = (byte)((0xf << ((byte)j & 0x1f) & (uint)opCodePair) >> ((byte)j & 0x1f));
-							pathOpCodes[i] = pathOpCode;
-							i += pathOpCode == 2 ? 3 : 1;
-						}
+						byte pathOpCode = (byte)((0xf << ((byte)j & 0x1f) & (uint)opCodePair) >> ((byte)j & 0x1f));
+						pathOpCodes[i] = pathOpCode;
+						if (pathOpCode == 2) i += 2;
 					}
-					while (i < instructionCount);
 				}
-				i = 0;
-				if (instructionCount > 0)
+
+				// TODO: store path data somewhere
+				for (int i = 0; i < instructionCount; i++)
 				{
-					do
+					switch (pathOpCodes[i])
 					{
-						// Console.WriteLine($"      {i}/{runlen}");
-						switch (pathOpCodes[i])
-						{
-							case 0: // moveto x y
-								br.ReadDouble();
-								break;
+						case 0: // moveto x y
+							br.ReadDouble();
+							break;
 
-							case 1: // lineto x y
-								br.ReadDouble();
-								break;
+						case 1: // lineto x y
+							br.ReadDouble();
+							break;
 
-							case 2: // curveto c1x c1y c2x c2y x y
-								br.ReadBytes(8 * 3);
-								i += 2;
-								break;
+						case 2: // curveto c1x c1y c2x c2y x y
+							br.ReadBytes(8 * 3);
+							i += 2;
+							break;
 
-							case 3: // close
-								break;
+						case 3: // close
+							break;
 
-							case 4: // vmoveto
-							case 5: // hmoveto
-								br.ReadSingle();
-								break;
-						}
-						i++;
+						case 4: // vmoveto
+						case 5: // hmoveto
+							br.ReadSingle();
+							break;
 					}
-					while (i < instructionCount);
 				}
 			}
 
@@ -253,7 +242,7 @@ public class PivFigure
 			for (int i = 1; i <= segmentCount; i++)
 			{
 				var unk = br.ReadUInt16();
-				Logger.Debug($"    [poly{i}] ?={unk}");
+				Logger.Debug($"    [seg{i}] ?={unk}");
 			}
 		}
 
