@@ -142,6 +142,8 @@ public class PivFile
 			var frame = new PivFrame();
 			Frames.Add(frame);
 
+			Logger.Trace(Utils.GetBufferHexString(br, 32));
+
 			var bgIdx = br.ReadUInt16();
 			var unk1 = br.ReadUInt16();
 			var unk2 = br.ReadByte();
@@ -183,6 +185,11 @@ public class PivFile
 				var eUnk2 = br.ReadBytes(5); // always 0
 
 				Logger.Debug($"      x={x} y={y} {Utils.ToHex(eUnk2)}");
+
+				if (figure.UnknownList.Count > 0)
+				{
+					br.ReadBytes(figure.UnknownList.Count * 4);
+				}
 			}
 
 			br.ReadBytes(1 + elementCount * 2);

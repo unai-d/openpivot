@@ -7,11 +7,6 @@ namespace Unai.OpenPivot;
 
 public class PivFigure
 {
-	public List<PivSegment> Segments { get; private set; } =
-	[
-		new() // Root
-	];
-
 	public static PivFigure DefaultFigure => new()
 	{
 		Segments =
@@ -31,6 +26,13 @@ public class PivFigure
 			new(10, 50, Utils.ToRadians(67.5), 14),
 		]
 	};
+
+	public List<PivSegment> Segments { get; private set; } =
+	[
+		new() // Root
+	];
+
+	public List<object> UnknownList { get; private set; } = [];
 
 	public PivFigure()
 	{
@@ -52,7 +54,7 @@ public class PivFigure
 
 		PivSegmentType firstSegType = 0;
 
-		for (int segIdx = 0; segIdx < segmentCount; segIdx++)
+		for (int segIdx = 1; segIdx <= segmentCount; segIdx++)
 		{
 			Logger.Trace(Utils.GetBufferHexString(br, 32));
 
@@ -60,7 +62,7 @@ public class PivFigure
 			Segments.Add(pivSeg);
 
 			pivSeg.ParentIndex = br.ReadUInt16();
-			pivSeg.Index = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipMeshFill)) ? br.ReadUInt16() : (segIdx + 1); // called “EndPoint.”
+			pivSeg.Index = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipMeshFill)) ? br.ReadUInt16() : (segIdx + 1);
 			pivSeg.Length = br.ReadSingle();
 			pivSeg.Angle = br.ReadDouble();
 			pivSeg.Thickness = br.ReadSingle();
@@ -105,7 +107,7 @@ public class PivFigure
 		Logger.Debug($"    bend#={bendCount}");
 		if (bendCount > segmentCount)
 		{
-			throw new InvalidDataException();
+			throw new InvalidDataException("Bend value count is bigger than the number of segments.");
 		}
 		if (bendCount > 0)
 		{
@@ -122,6 +124,10 @@ public class PivFigure
 		{
 			var imageCount = br.ReadUInt16();
 			Logger.Debug($"    img#={imageCount}");
+			if (imageCount > 0)
+			{
+				throw new NotImplementedException("Sprites are not implemented yet.");
+			}
 		}
 
 		// text data
@@ -243,6 +249,7 @@ public class PivFigure
 			{
 				var unk = br.ReadUInt16();
 				Logger.Debug($"    [seg{i}] ?={unk}");
+				UnknownList.Add(unk);
 			}
 		}
 
