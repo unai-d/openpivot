@@ -205,6 +205,11 @@ public sealed partial class MainPage : Page
 
 		foreach (var figInst in _pivFile.Frames[_currentFrame].FigureInstances)
 		{
+			if (figInst.FigureIndex >= _pivFile.Figures.Count)
+			{
+				continue;
+			}
+
 			var figure = _pivFile.Figures[figInst.FigureIndex];
 			if (figure != null)
 			{
