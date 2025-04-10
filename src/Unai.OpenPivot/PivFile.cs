@@ -156,17 +156,19 @@ public class PivFile
 				var figInst = new PivFigureInstance();
 				frame.FigureInstances.Add(figInst);
 
-				Logger.Debug(Utils.GetBufferHexString(br, 32));
+				Logger.Trace(Utils.GetBufferHexString(br, 32));
 
-				var eUnk0 = br.ReadUInt32();
+				var figInstIdx = br.ReadUInt32(); // PA5 says "id".
 				figInst.FigureIndex = br.ReadUInt16();
 				figInst.Scale = br.ReadSingle();
-				var color = br.ReadUInt32(); // untested
-				var transparency = br.ReadByte(); // untested
+				var color = br.ReadBytes(4); // RGBA
+				var unk = br.ReadByte(); // untested
 
-				Logger.Debug($"    [e{eIdx}] {eUnk0:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} col={color:x8} {transparency:x2}");
+				Logger.Debug($"    [e{eIdx}] {figInstIdx:x8} fig={figInst.FigureIndex:x4} scale={figInst.Scale} col={Utils.ToHex(color)} {unk:x2}");
 				
 				var figure = Figures[figInst.FigureIndex];
+				Logger.Debug($"      figName='{figure.Name}'");
+
 				for (int segIdx = 1; segIdx < figure.Segments.Count; segIdx++)
 				{
 					var segAngle = br.ReadDouble();
@@ -182,17 +184,38 @@ public class PivFile
 				var x = br.ReadSingle();
 				var y = br.ReadSingle();
 				figInst.Position = new(x, y);
-				var eUnk2 = br.ReadBytes(5); // always 0
+				Logger.Debug($"      x={x} y={y}");
 
-				Logger.Debug($"      x={x} y={y} {Utils.ToHex(eUnk2)}");
+				Logger.Trace(Utils.GetBufferHexString(br, 32));
 
-				if (figure.UnknownList.Count > 0)
+				// runlist of seg. lengths
+				var segLenCount = br.ReadUInt16(); // 0, 1, 3, 4…
+				Logger.Debug($"      ?={segLenCount}");
+				if (segLenCount > 0)
 				{
-					br.ReadBytes(figure.UnknownList.Count * 4);
+					for (int i = 1; i < figure.Segments.Count; i++)
+					{
+						Logger.Debug($"        [seg{i}] len?={br.ReadSingle()}");
+					}
 				}
+
+				// runlist of seg. bends?
+				var bendCount = br.ReadUInt16();
+				if (bendCount > figure.Segments.Count) throw new Exception();
+				Logger.Debug($"      bend#?={bendCount}");
+				for (int i = 0; i < bendCount; i++)
+				{
+					var bendAngle = br.ReadDouble();
+					Logger.Debug($"        bend?={bendAngle}");
+				}
+				
+				var eUnk2 = br.ReadByte();
+				Logger.Debug($"      ?2={eUnk2:x8}");
 			}
 
-			br.ReadBytes(1 + elementCount * 2);
+			// render order of figure instances? + unknown byte (not frame interpolation count)
+			var frUnk = br.ReadBytes(1 + elementCount * 2);
+			Logger.Debug($"    fr_unk={Utils.ToHex(frUnk)}");
 		}
 
 		Logger.Debug("tail (must be 5 bytes):\n" + Utils.GetBufferHexString(br, 16));

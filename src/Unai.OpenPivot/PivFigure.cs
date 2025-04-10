@@ -32,6 +32,9 @@ public class PivFigure
 		new() // Root
 	];
 
+	public string Name { get; set; } = null;
+	public Dictionary<int, double> BendAngles { get; set; } = null;
+
 	public List<object> UnknownList { get; private set; } = [];
 
 	public PivFigure()
@@ -111,11 +114,13 @@ public class PivFigure
 		}
 		if (bendCount > 0)
 		{
+			BendAngles = [];
 			for (int edIdx = 0; edIdx < bendCount; edIdx++)
 			{
 				var bendSegIdx = br.ReadUInt16();
 				var bendAngle = Utils.ToDegrees(br.ReadDouble());
-				Logger.Debug($"    {bendSegIdx} bend={bendAngle}");
+				Logger.Debug($"      {bendSegIdx} bend={bendAngle}");
+				BendAngles.Add(bendSegIdx, bendAngle);
 			}
 		}
 
@@ -253,8 +258,8 @@ public class PivFigure
 			}
 		}
 
-		var figName = br.ReadPivString();
-		Logger.Debug($"    figName='{figName}'");
+		Name = br.ReadPivString();
+		Logger.Debug($"    figName='{Name}'");
 	}
 
 	public PivSegment GetSegment(int index)
