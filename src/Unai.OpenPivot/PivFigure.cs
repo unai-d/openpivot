@@ -62,7 +62,7 @@ public class PivFigure
 			Segments.Add(pivSeg);
 
 			pivSeg.ParentIndex = br.ReadUInt16();
-			pivSeg.Index = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipMeshFill)) ? br.ReadUInt16() : (segIdx + 1);
+			pivSeg.Index = (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipMeshFill)) ? br.ReadUInt16() : segIdx;
 			pivSeg.Length = br.ReadSingle();
 			pivSeg.Angle = br.ReadDouble();
 			pivSeg.Thickness = br.ReadSingle();
