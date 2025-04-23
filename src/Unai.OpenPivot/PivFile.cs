@@ -189,9 +189,9 @@ public class PivFile
 				Logger.Trace(Utils.GetBufferHexString(br, 32));
 
 				// runlist of seg. lengths
-				var segLenCount = br.ReadUInt16(); // 0, 1, 3, 4…
-				Logger.Debug($"      ?={segLenCount}");
-				if (segLenCount > 0)
+				var eUnk0 = br.ReadUInt16(); // 0, 1, 2, 3, 4…
+				Logger.Debug($"      ?={eUnk0}");
+				if (eUnk0 > 0)
 				{
 					for (int i = 1; i < figure.Segments.Count; i++)
 					{
@@ -201,26 +201,61 @@ public class PivFile
 
 				// runlist of seg. bends?
 				var bendCount = br.ReadUInt16();
-				if (bendCount > figure.Segments.Count) throw new Exception();
 				Logger.Debug($"      bend#?={bendCount}");
+				if (bendCount > figure.Segments.Count) throw new Exception("Bend count is greater than figure segment count.");
 				for (int i = 0; i < bendCount; i++)
 				{
 					var bendAngle = br.ReadDouble();
 					Logger.Debug($"        bend?={bendAngle}");
 				}
+				if (bendCount > 0)
+				{
+					for (int i = 0; i < figure.Segments.Count - bendCount - 1; i++)
+					{
+						var eUnk3 = br.ReadDouble();
+						Logger.Debug($"        ?={eUnk3}");
+					}
+				}
+
+				Logger.Trace(Utils.GetBufferHexString(br, 32));
 				
 				var eUnk2 = br.ReadByte();
-				Logger.Debug($"      ?2={eUnk2:x8}");
+				Logger.Debug($"      ?2=0x{eUnk2:x2}");
+				if (eUnk2 > 0)
+				{
+					var eUnk2_0 = br.ReadUInt16();
+					var eUnk2_1 = br.ReadUInt16();
+					Logger.Debug($"        {eUnk2_0} {eUnk2_1}");
+				}
 			}
 
-			// render order of figure instances? + unknown byte (not frame interpolation count)
-			var frUnk = br.ReadBytes(1 + elementCount * 2);
-			Logger.Debug($"    fr_unk={Utils.ToHex(frUnk)}");
+			// render order of figure instances?
+			Logger.Debug($"    fig. render order?:");
+			for (int i = 0; i < elementCount; i++)
+			{
+				var elementIndex = br.ReadUInt16();
+				Logger.Debug($"      {i} element={elementIndex}");
+			}
+			
+			Logger.Trace(Utils.GetBufferHexString(br, 32));
+
+			var unkBool = br.ReadByte();
+			if (unkBool != 1)
+			{
+				Logger.Warning($"Unexpected {nameof(unkBool)}: 0x{unkBool:x2} != 0x01");
+				for (int i = 0; i < elementCount; i++)
+				{
+					var eUnk5 = br.ReadSingle();
+					Logger.Debug($"      {i} ?={eUnk5}");
+				}
+			}
 		}
 
-		Logger.Debug("tail (must be 5 bytes):\n" + Utils.GetBufferHexString(br, 16));
+		Logger.Trace(Utils.GetBufferHexString(br, 32));
 
 		var framerate = br.ReadUInt32();
 		Logger.Debug($"fps={framerate}");
+
+		br.ReadByte();
 	}
 }
