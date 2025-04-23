@@ -98,7 +98,7 @@ public class PivFigure
 				var mirror = br.ReadByte() > 0;
 			}
 
-			if (segIdx == 0) firstSegType = pivSeg.SegmentType;
+			if (segIdx == 1) firstSegType = pivSeg.SegmentType;
 
 			Logger.Debug($"    [seg{segIdx}] idx={pivSeg.Index} parent={pivSeg.ParentIndex} len={pivSeg.Length:N2} angle={Utils.ToDegrees(pivSeg.Angle):N2} thick={pivSeg.Thickness:N2} type={pivSeg.SegmentType} static={pivSeg.Static} col=rgba({red:x2}{green:x2}{blue:x2}{invAlpha:x2})");
 		}
@@ -139,67 +139,104 @@ public class PivFigure
 		if (firstSegType == PivSegmentType.Text)
 		{
 			Logger.Trace(Utils.GetBufferHexString(br, 32));
+
 			var unk1 = br.ReadByte();
 			var unk2 = br.ReadByte();
 			Logger.Debug($"    {unk1:x2} {unk2:x2}");
 
-			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSecondColor)) // why?
-			{
-				br.ReadByte();
-			}
+			// if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSecondColor)) // why?
+			// {
+			// 	br.ReadByte();
+			// }
+
+			Logger.Trace(Utils.GetBufferHexString(br, 32));
+			
 			var fontName = br.ReadPivLEString();
 			var boldItaFlags = br.ReadByte(); // bold = 1, italics = 2
 			var unk3 = br.ReadUInt32();
+			Logger.Debug($"    font='{fontName}' bif=0x{boldItaFlags:x2} {unk3:x4}");
+
+			Logger.Trace(Utils.GetBufferHexString(br, 32));
+			
 			var text = br.ReadPivLEString();
-			Logger.Debug($"    font='{fontName}' text='{text}' bif=0x{boldItaFlags:x2} {unk3:x4}");
+			Logger.Debug($"    text='{text}'");
 
 			var uniqueChars = br.ReadByte();
-			List<uint> charPaths = [];
+			Logger.Debug($"    path#={uniqueChars}");
 			for (int c = 0; c < uniqueChars; c++)
 			{
 				Logger.Trace(Utils.GetBufferHexString(br, 32));
 
 				// stuff like newlines, spaces and tabs don't render anything and thus don't have path data (instructionCount = 0).
 				var instructionCount = br.ReadUInt32();
-				charPaths.Add(instructionCount);
+				if (instructionCount > 1000) throw new InvalidDataException("Instruction count is too big.");
 
-				List<byte> pathOpCodes = Enumerable.Repeat((byte)0, (int)instructionCount * 4).ToList();
+				Logger.Debug($"      [path{c}] instr#={instructionCount}");
+
+				List<byte> pathOpCodes = Enumerable.Repeat((byte)255, (int)instructionCount * 4).ToList();
 				
-				for (int i = 0; i < instructionCount; i++)
+				int k = 0;
+				while (k < instructionCount)
 				{
 					var opCodePair = br.ReadByte();
-					for (int j = 0; i < instructionCount && (j < 8); j += 4)
+					for (int j = 0; k < instructionCount && (j < 8); j += 4)
 					{
 						byte pathOpCode = (byte)((0xf << ((byte)j & 0x1f) & (uint)opCodePair) >> ((byte)j & 0x1f));
-						pathOpCodes[i] = pathOpCode;
-						if (pathOpCode == 2) i += 2;
+						pathOpCodes[k] = pathOpCode;
+						k += pathOpCode == 2 ? 3 : 1;
+						Logger.Debug($"        [instr{pathOpCodes.Count - 1}] arg_off={k} op={(PathInstruction)pathOpCode}");
+						if (pathOpCode > 5)
+						{
+							Logger.Error($"Font path instruction overrun.");
+							br.BaseStream.Position++;
+							k = (int)instructionCount;
+							break;
+						}
 					}
 				}
 
 				// TODO: store path data somewhere
 				for (int i = 0; i < instructionCount; i++)
 				{
+					float[] args = new float[6];
+
 					switch (pathOpCodes[i])
 					{
 						case 0: // moveto x y
-							br.ReadDouble();
+							args[0] = br.ReadSingle();
+							args[1] = br.ReadSingle();
+							Logger.Debug($"        [instr{i}] moveto x={args[0]} y={args[1]}");
 							break;
 
 						case 1: // lineto x y
-							br.ReadDouble();
+							args[0] = br.ReadSingle();
+							args[1] = br.ReadSingle();
+							Logger.Debug($"        [instr{i}] lineto x={args[0]} y={args[1]}");
 							break;
 
 						case 2: // curveto c1x c1y c2x c2y x y
-							br.ReadBytes(8 * 3);
+							args[0] = br.ReadSingle();
+							args[1] = br.ReadSingle();
+							args[2] = br.ReadSingle();
+							args[3] = br.ReadSingle();
+							args[4] = br.ReadSingle();
+							args[5] = br.ReadSingle();
 							i += 2;
+							Logger.Debug($"        [instr{i}] curveto c1x={args[0]} c1y={args[1]} c2x={args[2]} c2y={args[3]} x={args[4]} y={args[5]}");
 							break;
 
 						case 3: // close
+							Logger.Debug($"        [instr{i}] close");
 							break;
 
 						case 4: // vmoveto
+							args[0] = br.ReadSingle();
+							Logger.Debug($"        [instr{i}] vmoveto y={args[0]}");
+							break;
+
 						case 5: // hmoveto
-							br.ReadSingle();
+							args[0] = br.ReadSingle();
+							Logger.Debug($"        [instr{i}] hmoveto x={args[0]}");
 							break;
 					}
 				}
