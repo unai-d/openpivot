@@ -86,7 +86,7 @@ public class PivFigure
 			if (!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipSecondColor))
 			{
 				var hasSecondColor = br.ReadByte();
-				if (hasSecondColor > 1) throw new InvalidDataException("Invalid boolean value.");
+				if (hasSecondColor > 1) throw new InvalidDataException($"Invalid boolean value (0x{hasSecondColor:X2}).");
 				// if (hasSecondColor > 0) br.ReadBytes((!kindFlags.HasFlag(PivSegmentLayoutFlags.SkipAlphaChannel)) ? 4 : 3);
 				if (hasSecondColor > 0) br.ReadBytes(4);
 			}
@@ -119,7 +119,7 @@ public class PivFigure
 			{
 				var bendSegIdx = br.ReadUInt16();
 				var bendAngle = Utils.ToDegrees(br.ReadDouble());
-				Logger.Debug($"      {bendSegIdx} bend={bendAngle}");
+				Logger.Debug($"      [bend{edIdx}] segIdx={bendSegIdx} bend={bendAngle}");
 				BendAngles.Add(bendSegIdx, bendAngle);
 			}
 		}
@@ -224,6 +224,7 @@ public class PivFigure
 
 		// polygon data
 		var polygonCount = br.ReadUInt16();
+		var absPolyVertexCount = 0;
 		Logger.Debug($"    poly#={polygonCount}");
 		if (polygonCount > 0)
 		{
@@ -231,35 +232,59 @@ public class PivFigure
 			{
 				Logger.Trace(Utils.GetBufferHexString(br, 32));
 				var numVertices = br.ReadUInt16();
-				br.ReadUInt32(); // rgba
+				var shapeColor = br.ReadUInt32(); // rgba
 				for (int i = 0; i < numVertices; i++)
 				{
 					var vertexValue = br.ReadUInt16();
 					Logger.Debug($"      [poly{polyIdx}] [vert{i}] {vertexValue}");
+					absPolyVertexCount++;
 				}
 			}
+
+			Logger.Debug($"      total vertex count = {absPolyVertexCount}");
 		}
 
 		if (kindFlags.HasFlag(PivSegmentLayoutFlags.SkipThickness))
 		{
 			var outlineWidth = br.ReadSingle() * 200;
-			br.ReadUInt32();
+			var eUnk4 = br.ReadUInt32();
+			Logger.Debug($"    outline={outlineWidth} ?={eUnk4:x8}");
 		}
 
 		Logger.Trace(Utils.GetBufferHexString(br, 32));
 
 		if (!kindFlags.HasFlag(PivSegmentLayoutFlags.Unknown16))
 		{
-			for (int i = 1; i <= segmentCount; i++)
+			// for (int i = 0; i < segmentCount; i++) // ← works with archer.piv, run_demo.piv, tween_demo.piv, tween_pendulum.piv, etc.
+			// // works with
+			// //   type=0xa8(10101000) SkipAlphaChannel, SkipMeshFill, SkipSecondColor
+			// //   type=0xa0(10100000) SkipMeshFill, SkipSecondColor
+			// // for (int i = 0; i < segmentCount + 1; i++)
+			// // for (int i = 0; i < segmentCount + 6; i++) // ← works with tween_football_bounce.piv, ~52 segments
+			// {
+			// 	var unk = br.ReadUInt16();
+			// 	Logger.Debug($"      [seg{i}] ?={unk}");
+			// 	UnknownList.Add(unk);
+			// }
+
+			// heuristic-based skipping of unknown values.
+			for (int i = 0; i < segmentCount * 2; i++) // limit is based on nothing.
 			{
 				var unk = br.ReadUInt16();
-				Logger.Debug($"    [seg{i}] ?={unk}");
+				if (unk >= 0x0200)
+				{
+					br.BaseStream.Position -= 2;
+					break;
+				}
+				Logger.Debug($"    [unk{i}] {unk}");
 				UnknownList.Add(unk);
 			}
 		}
 
+		Logger.Trace(Utils.GetBufferHexString(br, 32));
+
 		Name = br.ReadPivString();
-		Logger.Debug($"    figName='{Name}'");
+		Logger.Debug($"    name='{Name}'");
 	}
 
 	public PivSegment GetSegment(int index)
