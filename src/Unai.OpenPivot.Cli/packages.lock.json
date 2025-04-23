@@ -11,6 +11,15 @@
           "System.Memory": "4.6.3"
         }
       },
+      "Spectre.Console.Cli": {
+        "type": "Direct",
+        "requested": "[0.50.0, )",
+        "resolved": "0.50.0",
+        "contentHash": "PrctsupqHEbyoP/iRL30awUWB0Z91i21myKl70qcPwoH6marEPkPyaPgzc37xFm9QSx+/jVBQGUH7tsn0mWGNQ==",
+        "dependencies": {
+          "Spectre.Console": "0.50.0"
+        }
+      },
       "System.Memory": {
         "type": "Transitive",
         "resolved": "4.6.3",

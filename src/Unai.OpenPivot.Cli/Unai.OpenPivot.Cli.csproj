@@ -8,6 +8,7 @@
 	<ItemGroup>
 		<ProjectReference Include="../Unai.OpenPivot/Unai.OpenPivot.csproj" />
 		<PackageReference Include="Spectre.Console" />
+		<PackageReference Include="Spectre.Console.Cli" />
 	</ItemGroup>
 
 </Project>
