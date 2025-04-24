@@ -18,4 +18,5 @@ public class PivBackground
 	public Vector2 GradientStart { get; set; } = Vector2.Zero;
 	public Vector2 GradientEnd { get; set; } = Vector2.UnitY;
 	public byte[] ImageData { get; set; } = null;
+	public string Name { get; set; } = null;
 }

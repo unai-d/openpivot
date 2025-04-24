@@ -66,17 +66,20 @@ public class PivFile
 						//           ↓                    ↓
 						//          32-bit               variable size
 
-						var imageDataOff = br.BaseStream.Position + sizeof(uint);
+						var imageDataOff = br.BaseStream.Position + sizeof(uint) * 2;
 						var imageDataEndOff = br.ReadUInt32();
+						br.ReadUInt32();
 						var imageDataSize = imageDataEndOff - imageDataOff;
+
+						Logger.Trace(Utils.GetBufferHexString(br, 32));
 
 						background.ImageData = br.ReadBytes((int)imageDataSize);
 
 						br.BaseStream.Position = imageDataEndOff;
 
-						var bgName = br.ReadPivString();
+						background.Name = br.ReadPivString();
 
-						Logger.Debug($"  [bg{bgIdx}] '{bgName}' size={imageDataSize}");
+						Logger.Debug($"  [bg{bgIdx}] '{background.Name}' size={imageDataSize}");
 					}
 					break;
 
@@ -112,8 +115,8 @@ public class PivFile
 							background.GradientEnd = new(x1, y1);
 						}
 
-						var bgName = br.ReadPivString();
-						Logger.Debug($"  [bg{bgIdx}] type={background.Type} '{bgName}'");
+						background.Name = br.ReadPivString();
+						Logger.Debug($"  [bg{bgIdx}] type={background.Type} '{background.Name}'");
 						if (background.Type == PivBackroundType.Gradient)
 						{
 							Logger.Debug($"    grad. start={x0}:{y0} end={x1}:{y1}");
