@@ -13,6 +13,9 @@ using Microsoft.UI.Xaml.Documents;
 using Uno.Toolkit.UI;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Storage;
+using Uno.Extensions;
+using System.Threading;
 
 namespace Unai.OpenPivot.Gui.Uno;
 
@@ -21,6 +24,8 @@ public sealed partial class MainPage : Page
 	private Point _currentPosition;
 	private int _currentFrame = 0;
 	private MainPageSectionId _currentSection = MainPageSectionId.AnimationManager;
+	private byte[] _uiCheckerboardPng = null;
+	private SKBitmap _uiCheckerboardSkBmp = null;
 
 	private PivFile _pivFile = new();
 
@@ -43,11 +48,18 @@ public sealed partial class MainPage : Page
 
 	private Visibility Not(bool? value) => (!value ?? false) ? Visibility.Visible : Visibility.Collapsed;
 
-	private void OnLoaded(object sender, RoutedEventArgs e)
+	private async void OnLoaded(object sender, RoutedEventArgs e)
 	{
+		try
+		{
+			var chkbrdPng = await StorageFile.GetFileFromApplicationUriAsync(new Uri(BaseUri, "Assets/Checkerboard16.png"));
+			var chkbrdStream = await chkbrdPng.OpenReadAsync();			
+			_uiCheckerboardPng = await chkbrdStream.AsStreamForRead().ReadBytesAsync(CancellationToken.None);
+		}
+		catch {}
+
 		_pivFile.Frames.Add(new());
 		_pivFile.Frames[0].FigureInstances.Add(new() { FigureIndex = 1, Position = new(_pivFile.CanvasWidth / 2, _pivFile.CanvasHeight / 2) });
-		_pivFile.Backgrounds.Add(new() { Name = "Internal Test" });
 		UpdateBackgroundData();
 	}
 
@@ -228,6 +240,18 @@ public sealed partial class MainPage : Page
 				RenderFigureSegment(figure, 0, new SKPoint(figInst.Position.X, figInst.Position.Y), figInst.SegmentOverrides);
 			}
 		}
+
+		// Render viewport limits.
+		
+		_uiCheckerboardSkBmp ??= SKBitmap.Decode(_uiCheckerboardPng);
+		var skShader = SKShader.CreateBitmap(_uiCheckerboardSkBmp, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat);
+
+		canvas.DrawRect(new(0, 0, _pivFile.CanvasWidth, _pivFile.CanvasHeight), new SKPaint()
+		{
+			Shader = skShader,
+			Style = SKPaintStyle.Stroke,
+			Color = SKColors.White.WithAlpha(0x80)
+		});
 	}
 
 	private void OnFrameNumberBoxChange(object sender, NumberBoxValueChangedEventArgs e)
