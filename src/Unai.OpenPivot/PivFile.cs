@@ -147,12 +147,14 @@ public class PivFile
 
 			Logger.Trace(Utils.GetBufferHexString(br, 32));
 
-			var bgIdx = br.ReadUInt16();
 			var unk1 = br.ReadUInt16();
 			var unk2 = br.ReadByte();
+			frame.BackgroundIndex = br.ReadUInt16();
 			var elementCount = br.ReadUInt16();
 
-			Logger.Debug($"  [fr{f}] bg={bgIdx} {unk1:x4} {unk2:x2} elem#={elementCount}");
+			Logger.Debug($"  [fr{f}] {unk1:x4} {unk2:x2} bg={frame.BackgroundIndex} elem#={elementCount}");
+
+			if (frame.BackgroundIndex >= Backgrounds.Count) Logger.Warning($"Background index is out of bounds.");
 
 			for (int eIdx = 0; eIdx < elementCount; eIdx++)
 			{
