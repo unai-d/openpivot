@@ -66,5 +66,26 @@
 		<TextBlock x:Name="_uiFigureMgr" Grid.Row="3" Visibility="Collapsed">
 			Work in progress!
 		</TextBlock>
+
+		<GridView x:Name="_uiBackgroundMgr" Grid.Row="3" Visibility="Collapsed" HorizontalAlignment="Center" ItemsSource="{x:Bind _backgroundThumbnails}">
+			<GridView.ItemContainerStyle>
+				<not_win:Style TargetType="GridViewItem">
+					<Setter Property="VerticalContentAlignment" Value="Stretch" />
+					<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+				</not_win:Style>
+			</GridView.ItemContainerStyle>
+			<GridView.ItemTemplate>
+				<DataTemplate>
+					<Grid Width="192" Height="192" CornerRadius="4" Margin="4">
+						<Grid.RowDefinitions>
+							<RowDefinition />
+							<RowDefinition Height="auto" />
+						</Grid.RowDefinitions>
+						<Image Grid.Row="0" Width="188" Height="188" Source="{Binding Thumbnail}" />
+						<TextBlock Grid.Row="1" Text="{Binding Name}" />
+					</Grid>
+				</DataTemplate>
+			</GridView.ItemTemplate>
+		</GridView>
 	</Grid>
 </Page>

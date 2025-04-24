@@ -11,6 +11,8 @@ using Windows.Storage.Pickers;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Documents;
 using Uno.Toolkit.UI;
+using System.Collections.ObjectModel;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Unai.OpenPivot.Gui.Uno;
 
@@ -22,9 +24,7 @@ public sealed partial class MainPage : Page
 
 	private PivFile _pivFile = new();
 
-	// public int CurrentSectionNumber { get => (int)_currentSection; set { _currentSection = (MainPageSectionId)value; }}
-	// internal Visibility CurrentSectionIsAnimator => _currentSection == MainPageSectionId.AnimationManager ? Visibility.Visible : Visibility.Collapsed;
-	// internal Visibility CurrentSectionIsDesigner => _currentSection == MainPageSectionId.FigureManager ? Visibility.Visible : Visibility.Collapsed;
+	private ObservableCollection<BackgroundGridItem> _backgroundThumbnails = [];
 
 	public MainPage()
 	{
@@ -47,6 +47,8 @@ public sealed partial class MainPage : Page
 	{
 		_pivFile.Frames.Add(new());
 		_pivFile.Frames[0].FigureInstances.Add(new() { FigureIndex = 1, Position = new(_pivFile.CanvasWidth / 2, _pivFile.CanvasHeight / 2) });
+		_pivFile.Backgrounds.Add(new() { Name = "Internal Test" });
+		UpdateBackgroundData();
 	}
 
 	private void OnSurfacePointerMoved(object sender, PointerRoutedEventArgs e)
@@ -102,7 +104,7 @@ public sealed partial class MainPage : Page
 
 		if (_pivFile.Frames.Count == 0) return;
 
-		var frameBgIdx = _pivFile.Backgrounds.Count - 1; // TODO
+		var frameBgIdx = _pivFile.Frames[_currentFrame].BackgroundIndex;
 		var frameBg = _pivFile.Backgrounds[frameBgIdx];
 
 		switch (frameBg.Type)
@@ -133,6 +135,14 @@ public sealed partial class MainPage : Page
 						)
 					};
 					canvas.DrawRect(new(0, 0, _pivFile.CanvasWidth, _pivFile.CanvasHeight), skPaint);
+				}
+				break;
+
+			case PivBackroundType.JPEG:
+			case PivBackroundType.PNG:
+				{
+					var skImage = SKImage.FromEncodedData(frameBg.ImageData);
+					canvas.DrawImage(skImage, SKPoint.Empty);
 				}
 				break;
 		}
@@ -203,6 +213,8 @@ public sealed partial class MainPage : Page
 			}
 		}
 
+		// Render figure instances.
+
 		foreach (var figInst in _pivFile.Frames[_currentFrame].FigureInstances)
 		{
 			if (figInst.FigureIndex >= _pivFile.Figures.Count)
@@ -256,6 +268,7 @@ public sealed partial class MainPage : Page
 				};
 				await errMsg.ShowAsync();
 			}
+			UpdateBackgroundData();
 			RedrawCanvas();
 		}
 	}
@@ -287,10 +300,39 @@ public sealed partial class MainPage : Page
 		await aboutBox.ShowAsync();
 	}
 
-	public async Task OnSectionChange(object sender, TabBarSelectionChangedEventArgs e)
+	public void OnSectionChange(object sender, TabBarSelectionChangedEventArgs e)
 	{
 		_currentSection = (MainPageSectionId)_uiMainTabBar.SelectedIndex;
 		panelGrid.Visibility = _currentSection == MainPageSectionId.AnimationManager ? Visibility.Visible : Visibility.Collapsed;
 		_uiFigureMgr.Visibility = _currentSection == MainPageSectionId.FigureManager ? Visibility.Visible : Visibility.Collapsed;
+		_uiBackgroundMgr.Visibility = _currentSection == MainPageSectionId.BackgroundManager ? Visibility.Visible : Visibility.Collapsed;
+	}
+
+	public void UpdateBackgroundData()
+	{
+		_backgroundThumbnails.Clear();
+
+		if (_pivFile != null)
+		{
+			foreach (var bg in _pivFile.Backgrounds)
+			{
+				BitmapImage bitmap = null;
+				if (bg.ImageData != null)
+				{
+					try
+					{
+						var ms = new MemoryStream(bg.ImageData);
+						bitmap = new();
+						bitmap.DecodePixelWidth = 256;
+						bitmap.SetSource(ms);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine(ex);
+					}
+				}
+				_backgroundThumbnails.Add(new(new(bg), bitmap));
+			}
+		}
 	}
 }
