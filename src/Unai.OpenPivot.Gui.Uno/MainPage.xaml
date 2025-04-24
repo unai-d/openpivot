@@ -52,6 +52,8 @@
 				PaintSurface="OnPaintSwapChain"
 				PointerMoved="{x:Bind OnSurfacePointerMoved}"
 				PointerWheelChanged="{x:Bind OnSurfacePointerWheelChanged}"
+				PointerPressed="{x:Bind OnSurfacePointerPressed}"
+				PointerReleased="{x:Bind OnSurfacePointerReleased}"
 				not_win:Background="Transparent"
 				Visibility="{x:Bind hwAcceleration.IsChecked, Mode=OneWay}" />
 			<TextBlock x:Name="notSupported"
@@ -61,6 +63,8 @@
 				PaintSurface="OnPaintSurface"
 				PointerMoved="{x:Bind OnSurfacePointerMoved}"
 				PointerWheelChanged="{x:Bind OnSurfacePointerWheelChanged}"
+				PointerPressed="{x:Bind OnSurfacePointerPressed}"
+				PointerReleased="{x:Bind OnSurfacePointerReleased}"
 				not_win:Background="Transparent"
 				Visibility="{x:Bind Not(hwAcceleration.IsChecked), Mode=OneWay}" />
 		</Grid>

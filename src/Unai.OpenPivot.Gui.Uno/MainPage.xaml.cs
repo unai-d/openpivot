@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage;
 using Uno.Extensions;
 using System.Threading;
+using System.Numerics;
 
 namespace Unai.OpenPivot.Gui.Uno;
 
@@ -27,6 +28,8 @@ public sealed partial class MainPage : Page
 	private byte[] _uiCheckerboardPng = null;
 	private SKBitmap _uiCheckerboardSkBmp = null;
 	private float _uiCanvasZoom = 1f;
+	private Vector2 _uiCanvasTranslation = Vector2.Zero;
+	private bool _uiCanvasIsTranslating = false;
 
 	private PivFile _pivFile = new();
 
@@ -66,7 +69,17 @@ public sealed partial class MainPage : Page
 
 	private void OnSurfacePointerMoved(object sender, PointerRoutedEventArgs e)
 	{
-		_currentPosition = e.GetCurrentPoint(panelGrid).Position;
+		var pointerPosition = e.GetCurrentPoint(panelGrid).Position;
+		var pointerPositionDelta = pointerPosition - _currentPosition;
+
+		if (_uiCanvasIsTranslating)
+		{
+			_uiCanvasTranslation.X += (float)pointerPositionDelta.X / _uiCanvasZoom;
+			_uiCanvasTranslation.Y += (float)pointerPositionDelta.Y / _uiCanvasZoom;
+		}
+
+		_currentPosition = pointerPosition;
+
 		RedrawCanvas();
 	}
 
@@ -105,7 +118,7 @@ public sealed partial class MainPage : Page
 		var scale = (float)(XamlRoot?.RasterizationScale ?? 1);
 		var scaledSize = new SKSize((float)size.Width / scale, (float)size.Height / scale);
 
-		var vpMatrix = SKMatrix.CreateTranslation(-(_pivFile.CanvasWidth / 2), -(_pivFile.CanvasHeight / 2));
+		var vpMatrix = SKMatrix.CreateTranslation(_uiCanvasTranslation.X - (_pivFile.CanvasWidth / 2), _uiCanvasTranslation.Y - (_pivFile.CanvasHeight / 2));
 		vpMatrix = vpMatrix.PostConcat(SKMatrix.CreateScale(_uiCanvasZoom, _uiCanvasZoom));
 		vpMatrix = vpMatrix.PostConcat(SKMatrix.CreateTranslation(scaledSize.Width / 2, scaledSize.Height / 2));
 		canvas.SetMatrix(vpMatrix);
@@ -370,5 +383,15 @@ public sealed partial class MainPage : Page
 		_uiCanvasZoom = Math.Clamp(_uiCanvasZoom, 0.125f, 32f);
 
 		RedrawCanvas();
+	}
+
+	public void OnSurfacePointerPressed(object sender, PointerRoutedEventArgs e)
+	{
+		_uiCanvasIsTranslating = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
+	}
+
+	public void OnSurfacePointerReleased(object sender, PointerRoutedEventArgs e)
+	{
+		_uiCanvasIsTranslating = false;
 	}
 }
