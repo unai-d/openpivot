@@ -51,6 +51,7 @@
 			<sk:SKSwapChainPanel x:Name="swapChain"
 				PaintSurface="OnPaintSwapChain"
 				PointerMoved="{x:Bind OnSurfacePointerMoved}"
+				PointerWheelChanged="{x:Bind OnSurfacePointerWheelChanged}"
 				not_win:Background="Transparent"
 				Visibility="{x:Bind hwAcceleration.IsChecked, Mode=OneWay}" />
 			<TextBlock x:Name="notSupported"
@@ -59,6 +60,7 @@
 			<sk:SKXamlCanvas x:Name="canvas"
 				PaintSurface="OnPaintSurface"
 				PointerMoved="{x:Bind OnSurfacePointerMoved}"
+				PointerWheelChanged="{x:Bind OnSurfacePointerWheelChanged}"
 				not_win:Background="Transparent"
 				Visibility="{x:Bind Not(hwAcceleration.IsChecked), Mode=OneWay}" />
 		</Grid>

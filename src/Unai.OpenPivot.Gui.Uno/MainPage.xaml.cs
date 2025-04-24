@@ -26,6 +26,7 @@ public sealed partial class MainPage : Page
 	private MainPageSectionId _currentSection = MainPageSectionId.AnimationManager;
 	private byte[] _uiCheckerboardPng = null;
 	private SKBitmap _uiCheckerboardSkBmp = null;
+	private float _uiCanvasZoom = 1f;
 
 	private PivFile _pivFile = new();
 
@@ -104,7 +105,9 @@ public sealed partial class MainPage : Page
 		var scale = (float)(XamlRoot?.RasterizationScale ?? 1);
 		var scaledSize = new SKSize((float)size.Width / scale, (float)size.Height / scale);
 
-		var vpMatrix = SKMatrix.CreateScaleTranslation(scale, scale, (float)(size.Width / 2) - (_pivFile.CanvasWidth / 2), (float)(size.Height / 2) - (_pivFile.CanvasHeight / 2));
+		var vpMatrix = SKMatrix.CreateTranslation(-(_pivFile.CanvasWidth / 2), -(_pivFile.CanvasHeight / 2));
+		vpMatrix = vpMatrix.PostConcat(SKMatrix.CreateScale(_uiCanvasZoom, _uiCanvasZoom));
+		vpMatrix = vpMatrix.PostConcat(SKMatrix.CreateTranslation(scaledSize.Width / 2, scaledSize.Height / 2));
 		canvas.SetMatrix(vpMatrix);
 
 		canvas.Clear(new(128, 128, 128));
@@ -358,5 +361,14 @@ public sealed partial class MainPage : Page
 				_backgroundThumbnails.Add(new(new(bg), bitmap));
 			}
 		}
+	}
+
+	public void OnSurfacePointerWheelChanged(object sender, PointerRoutedEventArgs e)
+	{
+		var wheelDelta = e.GetCurrentPoint(this).Properties.MouseWheelDelta;
+		_uiCanvasZoom *= wheelDelta > 0 ? 1.5f : (1 / 1.5f);
+		_uiCanvasZoom = Math.Clamp(_uiCanvasZoom, 0.125f, 32f);
+
+		RedrawCanvas();
 	}
 }
