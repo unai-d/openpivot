@@ -22,13 +22,13 @@
 		<MenuBar Grid.Row="0">
 			<MenuBarItem Title="File">
 				<MenuFlyoutItem Text="Open" Icon="OpenFile" Click="HandleFileOpenClick" />
-				<MenuFlyoutItem Text="Save" Icon="Save" />
+				<!-- <MenuFlyoutItem Text="Save" Icon="Save" /> -->
 				<MenuFlyoutItem Text="Exit" Click="HandleExitClick" />
 			</MenuBarItem>
-			<MenuBarItem Title="Edit">
+			<!-- <MenuBarItem Title="Edit">
 				<MenuFlyoutItem Text="Undo" Icon="Undo" />
 				<MenuFlyoutItem Text="Redo" Icon="Redo" />
-			</MenuBarItem>
+			</MenuBarItem> -->
 			<MenuBarItem Title="Help">
 				<MenuFlyoutItem Text="About…" Click="OnAboutBoxShow" />
 			</MenuBarItem>
