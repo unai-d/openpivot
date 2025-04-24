@@ -42,7 +42,7 @@
 			</utu:TabBar.Items>
 		</utu:TabBar>
 
-		<StackPanel Orientation="Horizontal" Grid.Row="2">
+		<StackPanel Orientation="Horizontal" Grid.Row="2" Spacing="4" Padding="4">
 			<CheckBox x:Name="hwAcceleration" Content="Hardware Accelerated" />
 			<muxc:NumberBox x:Name="_frameNumBox" Value="0" SpinButtonPlacementMode="Compact" ValueChanged="{x:Bind OnFrameNumberBoxChange}" />
 		</StackPanel>
@@ -82,7 +82,7 @@
 							<RowDefinition Height="auto" />
 						</Grid.RowDefinitions>
 						<Image Grid.Row="0" Width="188" Height="188" Source="{Binding Thumbnail}" />
-						<TextBlock Grid.Row="1" Text="{Binding Name}" />
+						<TextBlock Grid.Row="1" Text="{Binding Name}" TextAlignment="Center" />
 					</Grid>
 				</DataTemplate>
 			</GridView.ItemTemplate>
