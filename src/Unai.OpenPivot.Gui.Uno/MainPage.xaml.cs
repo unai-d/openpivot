@@ -65,6 +65,7 @@ public sealed partial class MainPage : Page
 		_pivFile.Frames.Add(new());
 		_pivFile.Frames[0].FigureInstances.Add(new() { FigureIndex = 1, Position = new(_pivFile.CanvasWidth / 2, _pivFile.CanvasHeight / 2) });
 		UpdateBackgroundData();
+		RedrawCanvas();
 	}
 
 	private void OnSurfacePointerMoved(object sender, PointerRoutedEventArgs e)
