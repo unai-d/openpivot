@@ -20,6 +20,13 @@ jobs:
         dotnet-version: 8.0.x
         cache: true
         cache-dependency-path: ./src/Unai.OpenPivot.Gui.Uno/packages.lock.json
+    - name: Cache NuGet Packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-packages-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          nuget-packages-
     - name: Restore Dependencies
       run: dotnet restore ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --locked-mode --force-evaluate
     - name: Build 
