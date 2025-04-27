@@ -77,11 +77,11 @@ public sealed partial class MainPage : Page
 		{
 			_uiCanvasTranslation.X += (float)pointerPositionDelta.X / _uiCanvasZoom;
 			_uiCanvasTranslation.Y += (float)pointerPositionDelta.Y / _uiCanvasZoom;
+
+			RedrawCanvas();
 		}
 
 		_currentPosition = pointerPosition;
-
-		RedrawCanvas();
 	}
 
 	private void RedrawCanvas()
