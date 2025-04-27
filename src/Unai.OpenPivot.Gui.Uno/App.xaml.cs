@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Uno.Resizetizer;
 using Uno.UI;
@@ -77,5 +78,45 @@ public partial class App : Application
 		global::Uno.UI.Adapter.Microsoft.Extensions.Logging.LoggingAdapter.Initialize();
 		#endif
 		#endif
+	}
+
+	public static ContentDialog CreateExceptionDialog(Exception ex, XamlRoot xamlRoot, string title = null)
+	{
+		var textBlock = new TextBlock()
+		{
+			Text = $"{ex.Message ?? ex.GetType().Name}"
+		};
+
+		var detailsTextBlock = new TextBlock()
+		{
+			Text = $"Exception at {DateTime.Now}\nSystem: {Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily}\n\n{ex}",
+			TextWrapping = TextWrapping.Wrap,
+			FontFamily = new FontFamily("monospace"),
+			IsTextSelectionEnabled = true
+		};
+
+		var detailsExpander = new Expander()
+		{
+			Content = detailsTextBlock,
+			Header = "Show/hide exception details",
+		};
+
+		var stackPanel = new StackPanel()
+		{
+			Spacing = 4,
+			HorizontalAlignment = HorizontalAlignment.Stretch
+		};
+		stackPanel.Children.Add(textBlock);
+		stackPanel.Children.Add(detailsExpander);
+
+		var errorDialog = new ContentDialog()
+		{
+			Title = title ?? "An error has ocurred",
+			Content = stackPanel,
+			XamlRoot = xamlRoot,
+			CloseButtonText = "OK",
+		};
+
+		return errorDialog;
 	}
 }

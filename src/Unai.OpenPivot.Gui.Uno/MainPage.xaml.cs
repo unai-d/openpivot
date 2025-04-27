@@ -60,7 +60,10 @@ public sealed partial class MainPage : Page
 			var chkbrdStream = await chkbrdPng.OpenReadAsync();			
 			_uiCheckerboardPng = await chkbrdStream.AsStreamForRead().ReadBytesAsync(CancellationToken.None);
 		}
-		catch {}
+		catch (Exception ex)
+		{
+			await App.CreateExceptionDialog(ex, XamlRoot, "Cannot load application assets").ShowAsync();
+		}
 
 		_pivFile.Frames.Add(new());
 		_pivFile.Frames[0].FigureInstances.Add(new() { FigureIndex = 1, Position = new(_pivFile.CanvasWidth / 2, _pivFile.CanvasHeight / 2) });
@@ -300,14 +303,7 @@ public sealed partial class MainPage : Page
 			}
 			catch (Exception ex)
 			{
-				var errMsg = new ContentDialog()
-				{
-					Title = "Error Loading Pivot Project File",
-					Content = ex,
-					XamlRoot = XamlRoot,
-					CloseButtonText = "OK",
-				};
-				await errMsg.ShowAsync();
+				await App.CreateExceptionDialog(ex, XamlRoot, "Cannot read Pivot project file").ShowAsync();
 			}
 			UpdateBackgroundData();
 			RedrawCanvas();
@@ -349,7 +345,7 @@ public sealed partial class MainPage : Page
 		_uiBackgroundMgr.Visibility = _currentSection == MainPageSectionId.BackgroundManager ? Visibility.Visible : Visibility.Collapsed;
 	}
 
-	public void UpdateBackgroundData()
+	public async void UpdateBackgroundData()
 	{
 		_backgroundThumbnails.Clear();
 
@@ -369,7 +365,7 @@ public sealed partial class MainPage : Page
 					}
 					catch (Exception ex)
 					{
-						Console.WriteLine(ex);
+						await App.CreateExceptionDialog(ex, XamlRoot, "Cannot generate background thumbnail").ShowAsync();
 					}
 				}
 				_backgroundThumbnails.Add(new(new(bg), bitmap));
