@@ -322,7 +322,7 @@ public sealed partial class MainPage : Page
 		repoLink.Inlines.Add(new Run() { Text = "GitHub Repository" });
 
 		var buildString = new TextBlock() { TextWrapping = TextWrapping.Wrap };
-		buildString.Inlines.Add(new Run() { Text = "OpenPivot version 0.1" });
+		buildString.Inlines.Add(new Run() { Text = $"OpenPivot version {Unai.OpenPivot.BuildInfo.VersionString}" });
 		buildString.Inlines.Add(new LineBreak());
 		buildString.Inlines.Add(repoLink);
 

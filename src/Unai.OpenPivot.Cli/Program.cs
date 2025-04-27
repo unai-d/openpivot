@@ -10,7 +10,7 @@ class Program
 	{
 		EmitMessage += Utils.PrintLogMessageToConsole;
 
-		AnsiConsole.MarkupLine("[bold]OpenPivot[/]");
+		AnsiConsole.MarkupLine($"[bold]OpenPivot {BuildInfo.VersionString}[/]");
 
 		var cliApp = new CommandApp<ParseTestCommand>();
 		return cliApp.Run(args);

@@ -23,7 +23,7 @@ public class ParseTestCommand : Command<ParseTestCommand.Settings>
 
 	public override int Execute(CommandContext context, Settings settings)
 	{
-		var filePattern = settings.FilePattern ?? "*";
+		var filePattern = settings.FilePattern ?? "*.piv";
 		var searchPath = settings.SearchPath ?? Environment.CurrentDirectory;
 
 		var files = new DirectoryInfo(searchPath).GetFiles(filePattern);
