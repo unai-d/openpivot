@@ -73,7 +73,7 @@ public sealed partial class MainPage : Page
 
 	private void OnSurfacePointerMoved(object sender, PointerRoutedEventArgs e)
 	{
-		var pointerPosition = e.GetCurrentPoint(panelGrid).Position;
+		var pointerPosition = e.GetCurrentPoint(_uiAnimationSection).Position;
 		var pointerPositionDelta = pointerPosition - _currentPosition;
 
 		if (_uiCanvasIsTranslating)
@@ -278,17 +278,16 @@ public sealed partial class MainPage : Page
 	{
 		if (_pivFile == null) return;
 
-		_currentFrame = (int)_frameNumBox.Value;
+		_currentFrame = (int)_uiCurrentFrame.Value;
 		if (_currentFrame < 0) _currentFrame = 0;
 		else if (_currentFrame >= _pivFile.Frames.Count) _currentFrame = _pivFile.Frames.Count - 1;
-		_frameNumBox.Value = _currentFrame;
+		_uiCurrentFrame.Value = _currentFrame;
 		RedrawCanvas();
 	}
 
 	public async Task HandleFileOpenClick(object sender, RoutedEventArgs e)
 	{
 		var fileOpener = new FileOpenPicker();
-		fileOpener.SuggestedStartLocation = PickerLocationId.Unspecified;
 		fileOpener.FileTypeFilter.Add(".piv");
 
 		var pivFile = await fileOpener.PickSingleFileAsync();
@@ -322,7 +321,7 @@ public sealed partial class MainPage : Page
 		repoLink.Inlines.Add(new Run() { Text = "GitHub Repository" });
 
 		var buildString = new TextBlock() { TextWrapping = TextWrapping.Wrap };
-		buildString.Inlines.Add(new Run() { Text = $"OpenPivot version {Unai.OpenPivot.BuildInfo.VersionString}" });
+		buildString.Inlines.Add(new Run() { Text = $"OpenPivot version {BuildInfo.VersionString}" });
 		buildString.Inlines.Add(new LineBreak());
 		buildString.Inlines.Add(new Run() { Text = "© Unai Domínguez" });
 		buildString.Inlines.Add(new LineBreak());
@@ -342,9 +341,9 @@ public sealed partial class MainPage : Page
 	public void OnSectionChange(object sender, TabBarSelectionChangedEventArgs e)
 	{
 		_currentSection = (MainPageSectionId)_uiMainTabBar.SelectedIndex;
-		panelGrid.Visibility = _currentSection == MainPageSectionId.AnimationManager ? Visibility.Visible : Visibility.Collapsed;
-		_uiFigureMgr.Visibility = _currentSection == MainPageSectionId.FigureManager ? Visibility.Visible : Visibility.Collapsed;
-		_uiBackgroundMgr.Visibility = _currentSection == MainPageSectionId.BackgroundManager ? Visibility.Visible : Visibility.Collapsed;
+		_uiAnimationSection.Visibility = _currentSection == MainPageSectionId.AnimationManager ? Visibility.Visible : Visibility.Collapsed;
+		_uiFigureSection.Visibility = _currentSection == MainPageSectionId.FigureManager ? Visibility.Visible : Visibility.Collapsed;
+		_uiBackgroundSection.Visibility = _currentSection == MainPageSectionId.BackgroundManager ? Visibility.Visible : Visibility.Collapsed;
 	}
 
 	public async void UpdateBackgroundData()
@@ -396,7 +395,7 @@ public sealed partial class MainPage : Page
 
 	public async void ExportBackground(object sender, ItemClickEventArgs e)
 	{
-		var bgIdx = _uiBackgroundMgr.Items.IndexOf(e.ClickedItem);
+		var bgIdx = _uiBackgroundSection.Items.IndexOf(e.ClickedItem);
 		var bg = _backgroundThumbnails[bgIdx].Background;
 
 		if (bg.ImageData == null) return;
