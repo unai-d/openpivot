@@ -31,7 +31,7 @@ jobs:
     - name: Restore Dependencies
       run: dotnet restore ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --locked-mode --force-evaluate
     - name: Build 
-      run: dotnet build ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --no-restore -f $framework -c $config
+      run: dotnet build ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --no-restore -f $framework -c $config "-p:WasmShellWebAppBasePath=/openpivot"
     - name: Publish GitHub Pages Artifacts
       uses: actions/upload-pages-artifact@v3
       # if: github.event_name == 'workflow_dispatch'
