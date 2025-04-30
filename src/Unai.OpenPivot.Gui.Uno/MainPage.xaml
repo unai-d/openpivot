@@ -23,7 +23,7 @@
 			<MenuBarItem Title="File">
 				<MenuFlyoutItem Text="Open" Icon="OpenFile" Click="HandleFileOpenClick" />
 				<!-- <MenuFlyoutItem Text="Save" Icon="Save" /> -->
-				<MenuFlyoutItem Text="Exit" Click="HandleExitClick" />
+				<MenuFlyoutItem Text="Exit" Icon="Clear" Click="HandleExitClick" />
 			</MenuBarItem>
 			<!-- <MenuBarItem Title="Edit">
 				<MenuFlyoutItem Text="Undo" Icon="Undo" />
@@ -73,7 +73,16 @@
 			Work in progress!
 		</TextBlock>
 
-		<GridView x:Name="_uiBackgroundMgr" Grid.Row="3" Visibility="Collapsed" HorizontalAlignment="Center" ItemsSource="{x:Bind _backgroundThumbnails}">
+		<GridView
+			x:Name="_uiBackgroundMgr"
+			Grid.Row="3"
+			Visibility="Collapsed"
+			HorizontalAlignment="Center"
+			ItemsSource="{x:Bind _backgroundThumbnails}"
+			SelectionMode="None"
+			IsItemClickEnabled="true"
+			ItemClick="ExportBackground"
+			>
 			<GridView.ItemContainerStyle>
 				<not_win:Style TargetType="GridViewItem">
 					<Setter Property="VerticalContentAlignment" Value="Stretch" />

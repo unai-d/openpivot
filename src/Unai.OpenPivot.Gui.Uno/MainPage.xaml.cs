@@ -393,4 +393,33 @@ public sealed partial class MainPage : Page
 	{
 		_uiCanvasIsTranslating = false;
 	}
+
+	public async void ExportBackground(object sender, ItemClickEventArgs e)
+	{
+		var bgIdx = _uiBackgroundMgr.Items.IndexOf(e.ClickedItem);
+		var bg = _backgroundThumbnails[bgIdx].Background;
+
+		if (bg.ImageData == null) return;
+
+		var fileSaver = new FileSavePicker();
+		if (bg.Type == PivBackroundType.PNG) fileSaver.FileTypeChoices.Add("PNG Image", [ ".png" ]);
+		else if (bg.Type == PivBackroundType.JPEG) fileSaver.FileTypeChoices.Add("JPEG Image", [ ".jpeg", ".jpg", ".jpe" ]);
+		fileSaver.SuggestedFileName = bg.Name;
+
+		var bgFile = await fileSaver.PickSaveFileAsync();
+		if (bgFile != null)
+		{
+			Console.WriteLine($"Specified background file: {bgFile.Path}");
+			try
+			{
+				var winStorStr = await bgFile.OpenAsync(FileAccessMode.ReadWrite);
+				using var fstr = winStorStr.AsStreamForWrite();
+				await fstr.WriteAsync(bg.ImageData);
+			}
+			catch (Exception ex)
+			{
+				await App.CreateExceptionDialog(ex, XamlRoot, "Cannot export background to file").ShowAsync();
+			}
+		}
+	}
 }
