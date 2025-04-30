@@ -324,6 +324,8 @@ public sealed partial class MainPage : Page
 		var buildString = new TextBlock() { TextWrapping = TextWrapping.Wrap };
 		buildString.Inlines.Add(new Run() { Text = $"OpenPivot version {Unai.OpenPivot.BuildInfo.VersionString}" });
 		buildString.Inlines.Add(new LineBreak());
+		buildString.Inlines.Add(new Run() { Text = "© Unai Domínguez" });
+		buildString.Inlines.Add(new LineBreak());
 		buildString.Inlines.Add(repoLink);
 
 		var aboutBox = new ContentDialog()
