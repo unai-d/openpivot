@@ -1,7 +1,5 @@
 name: OpenPivot Build and Deploy
 on:
-  pull_request:
-    branches: [ main, dev ]
   push:
     branches: [ main, dev ]
   workflow_dispatch:
@@ -34,29 +32,24 @@ jobs:
       run: dotnet restore ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --locked-mode --force-evaluate
     - name: Build 
       run: dotnet build ./src/Unai.OpenPivot.Gui.Uno/Unai.OpenPivot.Gui.Uno.csproj --no-restore -f $framework -c $config
-    - name: Publish Artifacts
-      uses: actions/upload-artifact@v4
-      if: github.event_name == 'workflow_dispatch'
+    - name: Publish GitHub Pages Artifacts
+      uses: actions/upload-pages-artifact@v3
+      # if: github.event_name == 'workflow_dispatch'
       with:
-        name: pages
         path: ./src/Unai.OpenPivot.Gui.Uno/bin/${{env.config}}/${{env.framework}}/dist/
   deploy:
     needs: build 
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     name: Deploy
-    if: github.event_name == 'workflow_dispatch'
-    steps:
-    - name: Download Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: pages
-        path: dist        
+    # if: github.event_name == 'workflow_dispatch'
+    steps:  
     - name: Deploy to GitHub Pages
-      uses: crazy-max/ghaction-github-pages@v4
-      with:
-        target_branch: gh-pages
-        build_dir: ./dist/
-        jekyll: false
-        keep_history: true
+      uses: actions/deploy-pages@v4
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
